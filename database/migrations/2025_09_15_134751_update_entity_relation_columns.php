@@ -48,6 +48,7 @@ return new class extends Migration
         // Update column types to unsigned big integers
         foreach (static::$columnByTable as $table => $column) {
             $tableName = $table;
+            if ($tableName === 'joint_permissions') continue;
             Schema::table($table, function (Blueprint $table) use ($tableName, $column) {
                 if (is_string($column)) {
                     $column = [$column];
