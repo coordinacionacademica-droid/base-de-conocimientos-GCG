@@ -69,6 +69,9 @@ MYSQL_ATTR_SSL_CA=${MYSQL_ATTR_SSL_CA}
 STORAGE_TYPE=${STORAGE_TYPE}
 ALLOWED_IFRAME_SOURCES="${ALLOWED_IFRAME_SOURCES}"
 EOF
+chown www-data:www-data /app/.env
+chmod 644 /app/.env
+php artisan config:clear 2>/dev/null || true
 
 # Run database migrations in background without blocking web server startup
 (php artisan migrate --force --no-interaction 2>&1 || true) &

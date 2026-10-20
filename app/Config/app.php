@@ -70,7 +70,7 @@ return [
     // Can be set to a lone "*" to allow all sources for iframe content (Not advised).
     // Defaults to a set of common services.
     // Current host and source for the "DRAWIO" setting will be auto-appended to the sources configured.
-    'iframe_sources' => env('ALLOWED_IFRAME_SOURCES', 'https://*.draw.io https://*.youtube.com https://*.youtube-nocookie.com https://*.vimeo.com'),
+    'iframe_sources' => env('ALLOWED_IFRAME_SOURCES', 'https://*.google.com https://drive.google.com https://docs.google.com https://*.googleusercontent.com https://*.draw.io https://*.youtube.com https://*.youtube-nocookie.com https://*.vimeo.com'),
 
     // A list of style sources/hostnames that can be loaded styles within BookStack.
     // Space separated if multiple. BookStack host domain is auto-inferred.
