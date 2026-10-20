@@ -67,7 +67,8 @@ EOF
 
 # Run database migrations
 echo "Executing database migrations..."
-php artisan migrate --force --no-interaction || echo "Notice: Migrations finished or reported warnings."
+php artisan migrate --force --no-interaction
+echo "Database migrations completed successfully."
 
 echo "Starting BookStack web server on port ${PORT}..."
 exec apache2-foreground
