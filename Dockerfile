@@ -1,6 +1,6 @@
 FROM php:8.3-apache
 
-# Install system dependencies
+# Install system dependencies including ca-certificates for TLS/SSL database connections
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         git \
@@ -10,7 +10,8 @@ RUN apt-get update && \
         libjpeg62-turbo-dev \
         libldap2-dev \
         libpng-dev \
-        libzip-dev && \
+        libzip-dev \
+        ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
 # Configure and install required PHP extensions

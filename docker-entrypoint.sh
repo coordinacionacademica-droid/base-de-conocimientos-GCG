@@ -6,6 +6,11 @@ rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_wo
 a2dismod -f mpm_worker mpm_event 2>/dev/null || true
 a2enmod mpm_prefork 2>/dev/null || true
 
+# Auto-configure SSL CA certificate for cloud MySQL/TiDB
+if [ -z "$MYSQL_ATTR_SSL_CA" ] && [ -f /etc/ssl/certs/ca-certificates.crt ]; then
+    export MYSQL_ATTR_SSL_CA="/etc/ssl/certs/ca-certificates.crt"
+fi
+
 # Support dynamic PORT from cloud hosting (Railway, Render, etc.)
 PORT="${PORT:-80}"
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf 2>/dev/null || true
@@ -18,8 +23,11 @@ chmod -R 775 storage bootstrap/cache public/uploads
 
 # Run migrations if DB_HOST is set
 if [ -n "$DB_HOST" ]; then
+    echo "=================================================="
     echo "Checking and executing database migrations..."
-    php artisan migrate --force --no-interaction || echo "Warning: Migration failed or database not ready yet."
+    echo "Connecting to DB_HOST: ${DB_HOST}:${DB_PORT:-3306} (${DB_DATABASE})"
+    php artisan migrate --force --no-interaction || echo "Notice: Migrations encountered an issue, check logs above."
+    echo "=================================================="
 fi
 
 echo "Starting BookStack web server on port ${PORT}..."
