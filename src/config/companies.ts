@@ -6,12 +6,14 @@ export const ADMIN_CREDENTIALS = {
   name: 'Administrador General GCG'
 };
 
+export const MAIN_DRIVE_PARENT_FOLDER = '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1';
+
 export const COMPANIES: Company[] = [
   {
     id: 'edumin',
     name: 'EDUMIN - Escuela de Minería',
     code: 'EDUMIN',
-    folderId: '1rF5kYtKJp63bKgOK9x6uFlHZx-75wffg',
+    folderId: '177Kys9VArtLuE26QyK_FUKNeib5ajJ2A', // Carpeta real creada dentro del Drive Corporativo GCG
     pin: 'edumin2026',
     description: 'Capacitaciones, seguridad y minería',
     logoColor: 'from-amber-500 to-orange-600'
@@ -20,7 +22,7 @@ export const COMPANIES: Company[] = [
     id: 'empresa-02',
     name: 'Empresa 02',
     code: 'EMP02',
-    folderId: '1rF5kYtKJp63bKgOK9x6uFlHZx-75wffg', // Reemplazar con su respectivo folder ID de Drive
+    folderId: '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1',
     pin: 'emp022026',
     description: 'Gestión documental y archivos',
     logoColor: 'from-blue-500 to-indigo-600'
@@ -29,7 +31,7 @@ export const COMPANIES: Company[] = [
     id: 'empresa-03',
     name: 'Empresa 03',
     code: 'EMP03',
-    folderId: '1rF5kYtKJp63bKgOK9x6uFlHZx-75wffg',
+    folderId: '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1',
     pin: 'emp032026',
     description: 'Gestión documental y archivos',
     logoColor: 'from-emerald-500 to-teal-600'
@@ -38,7 +40,7 @@ export const COMPANIES: Company[] = [
     id: 'empresa-04',
     name: 'Empresa 04',
     code: 'EMP04',
-    folderId: '1rF5kYtKJp63bKgOK9x6uFlHZx-75wffg',
+    folderId: '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1',
     pin: 'emp042026',
     description: 'Gestión documental y archivos',
     logoColor: 'from-purple-500 to-violet-600'
@@ -47,7 +49,7 @@ export const COMPANIES: Company[] = [
     id: 'empresa-05',
     name: 'Empresa 05',
     code: 'EMP05',
-    folderId: '1rF5kYtKJp63bKgOK9x6uFlHZx-75wffg',
+    folderId: '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1',
     pin: 'emp052026',
     description: 'Gestión documental y archivos',
     logoColor: 'from-rose-500 to-pink-600'
