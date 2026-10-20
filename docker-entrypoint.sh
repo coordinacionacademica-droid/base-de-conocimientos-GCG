@@ -15,6 +15,9 @@ DB_USERNAME="${DB_USERNAME:-3n6CfkUrJM3jSZ8.root}"
 DB_PASSWORD="${DB_PASSWORD:-vSZiGReW2XZqemXJ}"
 STORAGE_TYPE="${STORAGE_TYPE:-local}"
 
+# Auto-correct typo if DB_HOST contains us2-east-1
+DB_HOST=$(echo "$DB_HOST" | sed 's/us2-east-1/us-east-1/g')
+
 echo "=================================================="
 echo "=== BookStack Startup Diagnostics ==="
 echo "PORT: ${PORT:-80}"
