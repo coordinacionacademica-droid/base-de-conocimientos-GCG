@@ -1,6 +1,11 @@
 #!/bin/sh
 set -e
 
+# Fix Apache MPM conflict (prevent AH00534: More than one MPM loaded)
+rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_worker.conf /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_event.conf 2>/dev/null || true
+a2dismod -f mpm_worker mpm_event 2>/dev/null || true
+a2enmod mpm_prefork 2>/dev/null || true
+
 # Support dynamic PORT from cloud hosting (Railway, Render, etc.)
 PORT="${PORT:-80}"
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf 2>/dev/null || true

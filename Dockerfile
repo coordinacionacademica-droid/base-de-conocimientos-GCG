@@ -31,6 +31,9 @@ RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-av
 RUN printf '<Directory /app/public>\n    Options Indexes FollowSymLinks\n    AllowOverride All\n    Require all granted\n</Directory>\n' > /etc/apache2/conf-available/bookstack.conf && \
     a2enconf bookstack
 
+# Ensure only mpm_prefork is active to prevent MPM conflict in PaaS
+RUN a2dismod -f mpm_event mpm_worker 2>/dev/null || true && a2enmod mpm_prefork
+
 # Use production php.ini with optimized memory and upload limits
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
     sed -i 's/memory_limit = 128M/memory_limit = 512M/g' "$PHP_INI_DIR/php.ini" && \
