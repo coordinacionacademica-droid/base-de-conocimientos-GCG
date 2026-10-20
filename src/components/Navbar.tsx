@@ -2,12 +2,14 @@
 
 import React from 'react';
 import { Company } from '@/types';
-import { Building2, LogOut, ExternalLink, ShieldCheck, FolderUp, ChevronDown } from 'lucide-react';
+import { Building2, LogOut, ExternalLink, ShieldCheck, FolderUp, ChevronDown, Grid } from 'lucide-react';
 import { COMPANIES } from '@/config/companies';
 
 interface NavbarProps {
   currentCompany: Company;
   isAdmin: boolean;
+  isInDirectoryView?: boolean;
+  onGoToDirectory?: () => void;
   onCompanyChange?: (company: Company) => void;
   onLogout: () => void;
 }
@@ -15,6 +17,8 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   currentCompany,
   isAdmin,
+  isInDirectoryView,
+  onGoToDirectory,
   onCompanyChange,
   onLogout
 }) => {
@@ -34,19 +38,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
                 {isAdmin && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">
-                    <ShieldCheck className="h-3 w-3" /> Admin
+                    <ShieldCheck className="h-3 w-3" /> Modo Administrador
                   </span>
                 )}
               </div>
               <h1 className="text-base font-bold text-slate-900 dark:text-white sm:text-lg">
-                {currentCompany.name}
+                {isAdmin && isInDirectoryView ? 'Panel General de Empresas' : currentCompany.name}
               </h1>
             </div>
           </div>
 
-          {/* Admin Company Switcher Dropdown */}
-          {isAdmin && onCompanyChange && (
-            <div className="relative ml-2 hidden md:block">
+          {/* Admin Switcher */}
+          {isAdmin && onCompanyChange && !isInDirectoryView && (
+            <div className="relative ml-2 hidden lg:block">
               <select
                 aria-label="Seleccionar empresa a inspeccionar"
                 value={currentCompany.id}
@@ -69,7 +73,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-3">
-          {/* Upload Button */}
+          {/* Admin Button to Toggle Directory */}
+          {isAdmin && onGoToDirectory && !isInDirectoryView && (
+            <button
+              onClick={onGoToDirectory}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <Grid className="h-4 w-4 text-blue-600" />
+              <span>Ver Todas las Empresas</span>
+            </button>
+          )}
+
+          {/* Direct Drive Link */}
           <a
             href={`https://drive.google.com/drive/folders/${currentCompany.folderId}`}
             target="_blank"
@@ -77,7 +92,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="hidden items-center gap-2 rounded-lg bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 sm:inline-flex"
           >
             <FolderUp className="h-4 w-4" />
-            <span>Subir / Abrir en Drive</span>
+            <span>Google Drive</span>
             <ExternalLink className="h-3 w-3 opacity-70" />
           </a>
 
