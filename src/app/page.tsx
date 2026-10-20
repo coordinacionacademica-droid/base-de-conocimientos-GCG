@@ -1,0 +1,191 @@
+'use client';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { Company, DriveFileItem } from '@/types';
+import { COMPANIES } from '@/config/companies';
+import { Navbar } from '@/components/Navbar';
+import { SearchAndFilters } from '@/components/SearchAndFilters';
+import { FileGrid } from '@/components/FileGrid';
+import { FileList } from '@/components/FileList';
+import { FilePreviewModal } from '@/components/FilePreviewModal';
+import { FolderUp, Info, CheckCircle2, Cloud, Sparkles } from 'lucide-react';
+
+export default function DashboardPage() {
+  const router = useRouter();
+  const [currentCompany, setCurrentCompany] = useState<Company>(COMPANIES[0]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [files, setFiles] = useState<DriveFileItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedFile, setSelectedFile] = useState<DriveFileItem | null>(null);
+  const [dataSource, setDataSource] = useState<string>('');
+
+  // 1. Check Auth Session
+  useEffect(() => {
+    const sessionStr = localStorage.getItem('gcg_session');
+    if (!sessionStr) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const session = JSON.parse(sessionStr);
+      if (session.company) {
+        setCurrentCompany(session.company);
+        setIsAdmin(Boolean(session.isAdmin));
+      }
+    } catch {
+      router.push('/login');
+    }
+  }, [router]);
+
+  // 2. Fetch Files for Company
+  const loadFiles = async (folderId: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/drive?folderId=${folderId}`);
+      const data = await res.json();
+      if (data.success) {
+        setFiles(data.files || []);
+        setDataSource(data.source || '');
+      }
+    } catch (err) {
+      console.error('Error cargando archivos:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (currentCompany?.folderId) {
+      loadFiles(currentCompany.folderId);
+    }
+  }, [currentCompany]);
+
+  // 3. Category Counts
+  const fileCounts = useMemo(() => {
+    return {
+      all: files.length,
+      video: files.filter((f) => f.fileCategory === 'video').length,
+      document: files.filter((f) => f.fileCategory === 'document').length,
+      spreadsheet: files.filter((f) => f.fileCategory === 'spreadsheet').length,
+      pdf: files.filter((f) => f.fileCategory === 'pdf').length
+    };
+  }, [files]);
+
+  // 4. Filter and Search
+  const filteredFiles = useMemo(() => {
+    return files.filter((file) => {
+      const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || file.fileCategory === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [files, searchQuery, selectedCategory]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('gcg_session');
+    router.push('/login');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      {/* Navbar */}
+      <Navbar
+        currentCompany={currentCompany}
+        isAdmin={isAdmin}
+        onCompanyChange={(newComp) => setCurrentCompany(newComp)}
+        onLogout={handleLogout}
+      />
+
+      {/* Main Container */}
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+        {/* Banner with Company Information & Quick Upload */}
+        <div className="mb-6 rounded-2xl bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 p-6 text-white shadow-xl shadow-blue-950/20">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-300">
+                  <Cloud className="h-3.5 w-3.5" /> Sincronización en la nube activa
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> 0 MB de almacenamiento de servidor
+                </span>
+              </div>
+              <h2 className="text-xl font-bold sm:text-2xl">{currentCompany.name}</h2>
+              <p className="text-xs text-slate-300 max-w-2xl">
+                {currentCompany.description || 'Repositorio exclusivo de archivos, manuales, normativas y videos.'}
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <a
+                href={`https://drive.google.com/drive/folders/${currentCompany.folderId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-md transition hover:bg-slate-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50"
+              >
+                <FolderUp className="h-4 w-4 text-blue-600" />
+                <span>Subir Nuevos Archivos</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Search, Filter Tabs and View Switcher */}
+        <div className="mb-6">
+          <SearchAndFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            totalFiles={filteredFiles.length}
+            onRefresh={() => loadFiles(currentCompany.folderId)}
+            isLoading={isLoading}
+            fileCounts={fileCounts}
+          />
+        </div>
+
+        {/* Content Section: Grid or List */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+            <span>
+              Mostrando <strong>{filteredFiles.length}</strong> archivo(s) de{' '}
+              <strong>{files.length}</strong> totales
+            </span>
+            {dataSource === 'preloaded-catalog' && (
+              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                <Sparkles className="h-3 w-3" /> Catálogo interactivo EDUMIN activo
+              </span>
+            )}
+          </div>
+
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+              <div className="flex flex-col items-center gap-3">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                <span className="text-xs font-medium text-slate-500">
+                  Cargando archivos desde Google Drive...
+                </span>
+              </div>
+            </div>
+          ) : viewMode === 'grid' ? (
+            <FileGrid files={filteredFiles} onOpenFile={(file) => setSelectedFile(file)} />
+          ) : (
+            <FileList files={filteredFiles} onOpenFile={(file) => setSelectedFile(file)} />
+          )}
+        </div>
+      </main>
+
+      {/* File Preview Modal (Videos, PDFs, Docs) */}
+      <FilePreviewModal
+        file={selectedFile}
+        onClose={() => setSelectedFile(null)}
+      />
+    </div>
+  );
+}
