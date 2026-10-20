@@ -35,8 +35,9 @@ RUN printf '<Directory /app/public>\n    Options Indexes FollowSymLinks\n    All
 # Ensure only mpm_prefork is active to prevent MPM conflict in PaaS
 RUN a2dismod -f mpm_event mpm_worker 2>/dev/null || true && a2enmod mpm_prefork
 
-# Use production php.ini with optimized memory and upload limits
+# Use production php.ini with optimized memory, upload limits and EGPCS variables_order
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+    sed -i 's/variables_order = "GPCS"/variables_order = "EGPCS"/g' "$PHP_INI_DIR/php.ini" && \
     sed -i 's/memory_limit = 128M/memory_limit = 512M/g' "$PHP_INI_DIR/php.ini" && \
     sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 100M/g' "$PHP_INI_DIR/php.ini" && \
     sed -i 's/post_max_size = 8M/post_max_size = 100M/g' "$PHP_INI_DIR/php.ini"
