@@ -9,7 +9,7 @@ import { SearchAndFilters } from '@/components/SearchAndFilters';
 import { FileGrid } from '@/components/FileGrid';
 import { FileList } from '@/components/FileList';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
-import { FolderUp, Info, CheckCircle2, Cloud, Sparkles } from 'lucide-react';
+import { FolderUp, CheckCircle2, Cloud, FolderOpen, ArrowUpRight } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -21,9 +21,8 @@ export default function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedFile, setSelectedFile] = useState<DriveFileItem | null>(null);
-  const [dataSource, setDataSource] = useState<string>('');
 
-  // 1. Check Auth Session
+  // 1. Check Auth Session & refresh company folder
   useEffect(() => {
     const sessionStr = localStorage.getItem('gcg_session');
     if (!sessionStr) {
@@ -34,7 +33,9 @@ export default function DashboardPage() {
     try {
       const session = JSON.parse(sessionStr);
       if (session.company) {
-        setCurrentCompany(session.company);
+        // Always refresh with latest config from COMPANIES
+        const latestCompany = COMPANIES.find((c) => c.id === session.company.id) || session.company;
+        setCurrentCompany(latestCompany);
         setIsAdmin(Boolean(session.isAdmin));
       }
     } catch {
@@ -46,11 +47,10 @@ export default function DashboardPage() {
   const loadFiles = async (folderId: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/drive?folderId=${folderId}`);
+      const res = await fetch(`/api/drive?folderId=${folderId}&t=${Date.now()}`);
       const data = await res.json();
       if (data.success) {
         setFiles(data.files || []);
-        setDataSource(data.source || '');
       }
     } catch (err) {
       console.error('Error cargando archivos:', err);
@@ -108,10 +108,10 @@ export default function DashboardPage() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-300">
-                  <Cloud className="h-3.5 w-3.5" /> Sincronización en la nube activa
+                  <Cloud className="h-3.5 w-3.5" /> Google Drive en vivo
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> 0 MB de almacenamiento de servidor
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Sincronización en tiempo real
                 </span>
               </div>
               <h2 className="text-xl font-bold sm:text-2xl">{currentCompany.name}</h2>
@@ -128,7 +128,8 @@ export default function DashboardPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-md transition hover:bg-slate-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50"
               >
                 <FolderUp className="h-4 w-4 text-blue-600" />
-                <span>Subir Nuevos Archivos</span>
+                <span>Subir / Gestionar en Drive</span>
+                <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
               </a>
             </div>
           </div>
@@ -150,18 +151,19 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Content Section: Grid or List */}
+        {/* Content Section: Grid, List or Empty State */}
         <div className="space-y-4">
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
             <span>
               Mostrando <strong>{filteredFiles.length}</strong> archivo(s) de{' '}
-              <strong>{files.length}</strong> totales
+              <strong>{files.length}</strong> en Google Drive
             </span>
-            {dataSource === 'preloaded-catalog' && (
-              <span className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
-                <Sparkles className="h-3 w-3" /> Catálogo interactivo EDUMIN activo
-              </span>
-            )}
+            <button
+              onClick={() => loadFiles(currentCompany.folderId)}
+              className="text-[11px] text-blue-600 hover:underline dark:text-blue-400"
+            >
+              🔄 Sincronizar ahora
+            </button>
           </div>
 
           {isLoading ? (
@@ -169,9 +171,31 @@ export default function DashboardPage() {
               <div className="flex flex-col items-center gap-3">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
                 <span className="text-xs font-medium text-slate-500">
-                  Cargando archivos desde Google Drive...
+                  Consultando Google Drive en vivo...
                 </span>
               </div>
+            </div>
+          ) : files.length === 0 ? (
+            /* Clean Empty State for New Folders */
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900/50">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                <FolderOpen className="h-8 w-8" />
+              </div>
+              <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white">
+                Esta carpeta está vacía en Google Drive
+              </h3>
+              <p className="mt-1.5 max-w-md text-xs text-slate-500 dark:text-slate-400">
+                Aún no has subido archivos a la carpeta de <strong>{currentCompany.name}</strong>. En cuanto subas cualquier documento, video o PDF a Drive, aparecerá aquí automáticamente.
+              </p>
+              <a
+                href={`https://drive.google.com/drive/folders/${currentCompany.folderId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-700"
+              >
+                <FolderUp className="h-4 w-4" />
+                <span>Abrir carpeta en Google Drive para subir archivos</span>
+              </a>
             </div>
           ) : viewMode === 'grid' ? (
             <FileGrid files={filteredFiles} onOpenFile={(file) => setSelectedFile(file)} />

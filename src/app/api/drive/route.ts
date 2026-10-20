@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { EDUMIN_DEMO_FILES, getFileCategory } from '@/lib/drive';
+import { getFileCategory } from '@/lib/drive';
 import { DriveFileItem } from '@/types';
 
 // Helper function to scrape live files from public embeddedfolderview
@@ -10,7 +10,7 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
-      next: { revalidate: 10 } // Cache for 10 seconds for real-time responsiveness
+      cache: 'no-store' // Always fetch fresh contents in real time
     });
 
     if (!res.ok) return [];
@@ -66,14 +66,14 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const folderId = searchParams.get('folderId') || '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1';
+  const folderId = searchParams.get('folderId') || '177Kys9VArtLuE26QyK_FUKNeib5ajJ2A';
   const apiKey = process.env.GOOGLE_DRIVE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_DRIVE_API_KEY;
 
   // 1. Try Google Drive API v3 if API Key is configured
   if (apiKey) {
     try {
       const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,size,iconLink,thumbnailLink,webViewLink,webContentLink,createdTime,modifiedTime)&pageSize=100&orderBy=folder,name&key=${apiKey}`;
-      const res = await fetch(url, { next: { revalidate: 15 } });
+      const res = await fetch(url, { cache: 'no-store' });
 
       if (res.ok) {
         const data = await res.json();
@@ -103,25 +103,14 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 2. Fetch live real-time files directly from Google Drive public folder (No API Key needed!)
+  // 2. Fetch live real-time files directly from Google Drive public folder
   const liveFiles = await fetchLiveDriveFolder(folderId);
 
-  if (liveFiles.length > 0) {
-    return NextResponse.json({
-      success: true,
-      source: 'google-drive-live',
-      folderId,
-      files: liveFiles
-    });
-  }
-
-  // 3. Fallback demo catalog if the folder is newly created and completely empty
+  // Return exactly what is in Google Drive in real time (even if 0 files)
   return NextResponse.json({
     success: true,
-    source: 'preloaded-catalog',
+    source: 'google-drive-live',
     folderId,
-    isEmpty: true,
-    message: 'Carpeta activa en Google Drive lista para recibir archivos',
-    files: EDUMIN_DEMO_FILES
+    files: liveFiles
   });
 }
