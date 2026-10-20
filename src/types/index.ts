@@ -19,7 +19,7 @@ export interface DriveFileItem {
   webContentLink?: string;
   createdTime?: string;
   modifiedTime?: string;
-  fileCategory: 'video' | 'document' | 'spreadsheet' | 'presentation' | 'pdf' | 'image' | 'archive' | 'other';
+  fileCategory: 'folder' | 'video' | 'document' | 'spreadsheet' | 'presentation' | 'pdf' | 'image' | 'archive' | 'other';
 }
 
 export interface UserSession {

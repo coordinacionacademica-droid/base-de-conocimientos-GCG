@@ -10,13 +10,29 @@ import { SearchAndFilters } from '@/components/SearchAndFilters';
 import { FileGrid } from '@/components/FileGrid';
 import { FileList } from '@/components/FileList';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
-import { FolderUp, CheckCircle2, Cloud, FolderOpen, ArrowUpRight, ArrowLeft } from 'lucide-react';
+import {
+  FolderUp,
+  CheckCircle2,
+  Cloud,
+  FolderOpen,
+  ArrowUpRight,
+  ArrowLeft,
+  ChevronRight,
+  Folder
+} from 'lucide-react';
+
+interface FolderBreadcrumb {
+  id: string;
+  name: string;
+}
 
 export default function DashboardPage() {
   const router = useRouter();
   const [currentCompany, setCurrentCompany] = useState<Company>(COMPANIES[0]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<'directory' | 'company'>('company');
+  const [activeFolderId, setActiveFolderId] = useState<string>('');
+  const [folderHistory, setFolderHistory] = useState<FolderBreadcrumb[]>([]);
   const [files, setFiles] = useState<DriveFileItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +54,6 @@ export default function DashboardPage() {
       setIsAdmin(isAdm);
 
       if (isAdm) {
-        // Admin starts by seeing all company bubbles!
         setActiveTab('directory');
       } else {
         setActiveTab('company');
@@ -47,20 +62,20 @@ export default function DashboardPage() {
       if (session.company) {
         const latestCompany = COMPANIES.find((c) => c.id === session.company.id) || session.company;
         setCurrentCompany(latestCompany);
+        setActiveFolderId(latestCompany.folderId);
+        setFolderHistory([{ id: latestCompany.folderId, name: latestCompany.name }]);
       }
     } catch {
       router.push('/login');
     }
   }, [router]);
 
-  // 2. Fetch Files for Company
-  const loadFiles = async (folderId: string, company?: Company) => {
+  // 2. Fetch Files for active folder
+  const loadFiles = async (folderId: string) => {
+    if (!folderId) return;
     setIsLoading(true);
     try {
-      const comp = company || currentCompany;
-      const res = await fetch(
-        `/api/drive?folderId=${folderId}&companyName=${encodeURIComponent(comp.name)}&companyCode=${encodeURIComponent(comp.code)}&t=${Date.now()}`
-      );
+      const res = await fetch(`/api/drive?folderId=${folderId}&t=${Date.now()}`);
       const data = await res.json();
       if (data.success) {
         setFiles(data.files || []);
@@ -73,10 +88,10 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (activeTab === 'company' && currentCompany?.folderId) {
-      loadFiles(currentCompany.folderId, currentCompany);
+    if (activeTab === 'company' && activeFolderId) {
+      loadFiles(activeFolderId);
     }
-  }, [currentCompany, activeTab]);
+  }, [activeFolderId, activeTab]);
 
   // 3. Category Counts
   const fileCounts = useMemo(() => {
@@ -105,11 +120,25 @@ export default function DashboardPage() {
 
   const handleSelectCompanyFromDirectory = (selected: Company) => {
     setCurrentCompany(selected);
+    setActiveFolderId(selected.folderId);
+    setFolderHistory([{ id: selected.folderId, name: selected.name }]);
     setActiveTab('company');
   };
 
+  // Subfolder Navigation
+  const handleOpenFolder = (folderItem: DriveFileItem) => {
+    setActiveFolderId(folderItem.id);
+    setFolderHistory((prev) => [...prev, { id: folderItem.id, name: folderItem.name }]);
+  };
+
+  const handleNavigateBreadcrumb = (index: number) => {
+    const target = folderHistory[index];
+    setFolderHistory((prev) => prev.slice(0, index + 1));
+    setActiveFolderId(target.id);
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="min-h-screen bg-slate-50/70 text-slate-800 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
       {/* Navbar */}
       <Navbar
         currentCompany={currentCompany}
@@ -117,8 +146,7 @@ export default function DashboardPage() {
         isInDirectoryView={isAdmin && activeTab === 'directory'}
         onGoToDirectory={() => setActiveTab('directory')}
         onCompanyChange={(newComp) => {
-          setCurrentCompany(newComp);
-          setActiveTab('company');
+          handleSelectCompanyFromDirectory(newComp);
         }}
         onLogout={handleLogout}
       />
@@ -134,32 +162,66 @@ export default function DashboardPage() {
         ) : (
           /* VIEW 2: SINGLE COMPANY REPOSITORY */
           <div className="space-y-6">
-            {/* Admin Back Button to Directory */}
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={() => setActiveTab('directory')}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+            {/* Top Navigation Row: Back Button + Breadcrumbs */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('directory')}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+                  >
+                    <ArrowLeft className="h-3.5 w-3.5" />
+                    <span>Directorio</span>
+                  </button>
+                )}
+
+                {/* Breadcrumb Path */}
+                {folderHistory.map((crumb, idx) => (
+                  <React.Fragment key={crumb.id}>
+                    {(idx > 0 || isAdmin) && <ChevronRight className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600" />}
+                    <button
+                      onClick={() => handleNavigateBreadcrumb(idx)}
+                      className={`inline-flex items-center gap-1 font-semibold rounded-lg px-2 py-1 transition ${
+                        idx === folderHistory.length - 1
+                          ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                          : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                      }`}
+                    >
+                      <Folder className="h-3.5 w-3.5" />
+                      <span className="truncate max-w-[150px] sm:max-w-xs">{crumb.name}</span>
+                    </button>
+                  </React.Fragment>
+                ))}
+              </div>
+
+              {/* Direct Drive Button */}
+              <a
+                href={`https://drive.google.com/drive/folders/${activeFolderId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
               >
-                <ArrowLeft className="h-4 w-4" />
-                <span>← Volver al Directorio de Todas las Empresas</span>
-              </button>
-            )}
+                <FolderUp className="h-3.5 w-3.5 text-blue-600" />
+                <span>Abrir carpeta actual en Google Drive</span>
+                <ArrowUpRight className="h-3 w-3 opacity-60" />
+              </a>
+            </div>
 
             {/* Banner with Company Information & Quick Upload */}
-            <div className="rounded-2xl bg-gradient-to-r from-blue-900 via-slate-900 to-indigo-950 p-6 text-white shadow-xl shadow-blue-950/20">
+            <div className="rounded-2xl bg-gradient-to-r from-blue-700 via-indigo-800 to-slate-900 p-6 text-white shadow-md shadow-blue-900/10">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-500/20 px-2.5 py-0.5 text-xs font-medium text-blue-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-xs">
                       <Cloud className="h-3.5 w-3.5" /> Google Drive en vivo
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 backdrop-blur-xs">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Sincronización en tiempo real
                     </span>
                   </div>
                   <h2 className="text-xl font-bold sm:text-2xl">{currentCompany.name}</h2>
-                  <p className="text-xs text-slate-300 max-w-2xl">
+                  <p className="text-xs text-blue-100 max-w-2xl">
                     {currentCompany.description || 'Repositorio exclusivo de archivos, manuales, normativas y videos.'}
                   </p>
                 </div>
@@ -169,10 +231,10 @@ export default function DashboardPage() {
                     href={`https://drive.google.com/drive/folders/${currentCompany.folderId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-md transition hover:bg-slate-100 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-white/50"
+                    className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-sm transition hover:bg-slate-100 hover:shadow-md"
                   >
                     <FolderUp className="h-4 w-4 text-blue-600" />
-                    <span>Subir / Gestionar en Drive</span>
+                    <span>Subir Archivos a Drive</span>
                     <ArrowUpRight className="h-3.5 w-3.5 opacity-60" />
                   </a>
                 </div>
@@ -189,7 +251,7 @@ export default function DashboardPage() {
                 viewMode={viewMode}
                 onViewModeChange={setViewMode}
                 totalFiles={filteredFiles.length}
-                onRefresh={() => loadFiles(currentCompany.folderId, currentCompany)}
+                onRefresh={() => loadFiles(activeFolderId)}
                 isLoading={isLoading}
                 fileCounts={fileCounts}
               />
@@ -199,29 +261,28 @@ export default function DashboardPage() {
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                 <span>
-                  Mostrando <strong>{filteredFiles.length}</strong> archivo(s) de{' '}
-                  <strong>{files.length}</strong> en Google Drive
+                  Mostrando <strong>{filteredFiles.length}</strong> elemento(s) en esta carpeta
                 </span>
                 <button
-                  onClick={() => loadFiles(currentCompany.folderId, currentCompany)}
-                  className="text-[11px] text-blue-600 hover:underline dark:text-blue-400"
+                  onClick={() => loadFiles(activeFolderId)}
+                  className="font-medium text-blue-600 hover:underline dark:text-blue-400"
                 >
                   🔄 Sincronizar ahora
                 </button>
               </div>
 
               {isLoading ? (
-                <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex h-64 items-center justify-center rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
                   <div className="flex flex-col items-center gap-3">
                     <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                    <span className="text-xs font-medium text-slate-500">
+                    <span className="text-xs font-semibold text-slate-500">
                       Consultando Google Drive en vivo...
                     </span>
                   </div>
                 </div>
               ) : files.length === 0 ? (
                 /* Clean Empty State for New Folders */
-                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900/50">
+                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900/50 shadow-xs">
                   <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
                     <FolderOpen className="h-8 w-8" />
                   </div>
@@ -229,20 +290,24 @@ export default function DashboardPage() {
                     Esta carpeta está vacía en Google Drive
                   </h3>
                   <p className="mt-1.5 max-w-md text-xs text-slate-500 dark:text-slate-400">
-                    Aún no se han subido archivos a la carpeta de <strong>{currentCompany.name}</strong>. En cuanto subas cualquier documento, video o PDF en Drive, aparecerá aquí automáticamente.
+                    Aún no se han subido archivos a esta carpeta. En cuanto subas cualquier documento, video o subcarpeta en Drive, aparecerá aquí automáticamente.
                   </p>
                   <a
-                    href={`https://drive.google.com/drive/folders/${currentCompany.folderId}`}
+                    href={`https://drive.google.com/drive/folders/${activeFolderId}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-700"
+                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-700"
                   >
                     <FolderUp className="h-4 w-4" />
-                    <span>Abrir carpeta en Google Drive para subir archivos</span>
+                    <span>Abrir en Google Drive para subir archivos</span>
                   </a>
                 </div>
               ) : viewMode === 'grid' ? (
-                <FileGrid files={filteredFiles} onOpenFile={(file) => setSelectedFile(file)} />
+                <FileGrid
+                  files={filteredFiles}
+                  onOpenFile={(file) => setSelectedFile(file)}
+                  onOpenFolder={handleOpenFolder}
+                />
               ) : (
                 <FileList files={filteredFiles} onOpenFile={(file) => setSelectedFile(file)} />
               )}
