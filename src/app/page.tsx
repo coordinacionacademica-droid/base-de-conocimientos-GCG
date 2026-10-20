@@ -44,10 +44,13 @@ export default function DashboardPage() {
   }, [router]);
 
   // 2. Fetch Files for Company
-  const loadFiles = async (folderId: string) => {
+  const loadFiles = async (folderId: string, company?: Company) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/drive?folderId=${folderId}&t=${Date.now()}`);
+      const comp = company || currentCompany;
+      const res = await fetch(
+        `/api/drive?folderId=${folderId}&companyName=${encodeURIComponent(comp.name)}&companyCode=${encodeURIComponent(comp.code)}&t=${Date.now()}`
+      );
       const data = await res.json();
       if (data.success) {
         setFiles(data.files || []);
@@ -61,7 +64,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (currentCompany?.folderId) {
-      loadFiles(currentCompany.folderId);
+      loadFiles(currentCompany.folderId, currentCompany);
     }
   }, [currentCompany]);
 

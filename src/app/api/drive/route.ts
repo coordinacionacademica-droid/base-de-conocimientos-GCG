@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFileCategory } from '@/lib/drive';
 import { DriveFileItem } from '@/types';
+import { MAIN_DRIVE_PARENT_FOLDER } from '@/config/companies';
 
 // Helper function to scrape live files from public embeddedfolderview
 async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> {
@@ -10,7 +11,7 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
-      cache: 'no-store' // Always fetch fresh contents in real time
+      cache: 'no-store' // Real-time: no stale cache
     });
 
     if (!res.ok) return [];
@@ -59,58 +60,41 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
 
     return files;
   } catch (error) {
-    console.error('Error al analizar carpeta en vivo de Drive:', error);
+    console.error('Error analizando carpeta en vivo de Drive:', error);
     return [];
   }
 }
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const folderId = searchParams.get('folderId') || '177Kys9VArtLuE26QyK_FUKNeib5ajJ2A';
-  const apiKey = process.env.GOOGLE_DRIVE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_DRIVE_API_KEY;
+  let targetFolderId = searchParams.get('folderId') || MAIN_DRIVE_PARENT_FOLDER;
+  const companyName = searchParams.get('companyName') || '';
+  const companyCode = searchParams.get('companyCode') || '';
 
-  // 1. Try Google Drive API v3 if API Key is configured
-  if (apiKey) {
-    try {
-      const url = `https://www.googleapis.com/drive/v3/files?q='${folderId}'+in+parents+and+trashed=false&fields=files(id,name,mimeType,size,iconLink,thumbnailLink,webViewLink,webContentLink,createdTime,modifiedTime)&pageSize=100&orderBy=folder,name&key=${apiKey}`;
-      const res = await fetch(url, { cache: 'no-store' });
+  // Smart Discovery: If pointing to the parent Corporativo GCG folder, find the company's subfolder!
+  if (targetFolderId === MAIN_DRIVE_PARENT_FOLDER && (companyName || companyCode)) {
+    const parentEntries = await fetchLiveDriveFolder(MAIN_DRIVE_PARENT_FOLDER);
+    const subfolder = parentEntries.find((entry) => {
+      if (entry.mimeType !== 'application/vnd.google-apps.folder') return false;
+      const cleanEntryName = entry.name.toLowerCase();
+      return (
+        (companyName && cleanEntryName.includes(companyName.toLowerCase().slice(0, 10))) ||
+        (companyCode && cleanEntryName.includes(companyCode.toLowerCase()))
+      );
+    });
 
-      if (res.ok) {
-        const data = await res.json();
-        const files: DriveFileItem[] = (data.files || []).map((file: any) => ({
-          id: file.id,
-          name: file.name,
-          mimeType: file.mimeType,
-          size: file.size ? parseInt(file.size, 10) : undefined,
-          iconLink: file.iconLink,
-          thumbnailLink: file.thumbnailLink,
-          webViewLink: file.webViewLink || `https://drive.google.com/file/d/${file.id}/preview`,
-          webContentLink: file.webContentLink,
-          createdTime: file.createdTime,
-          modifiedTime: file.modifiedTime,
-          fileCategory: getFileCategory(file.mimeType, file.name)
-        }));
-
-        return NextResponse.json({
-          success: true,
-          source: 'google-drive-api-live',
-          folderId,
-          files
-        });
-      }
-    } catch (err) {
-      console.error('Error llamando a Google Drive API:', err);
+    if (subfolder) {
+      targetFolderId = subfolder.id;
     }
   }
 
-  // 2. Fetch live real-time files directly from Google Drive public folder
-  const liveFiles = await fetchLiveDriveFolder(folderId);
+  // Fetch real-time files from the target folder
+  const liveFiles = await fetchLiveDriveFolder(targetFolderId);
 
-  // Return exactly what is in Google Drive in real time (even if 0 files)
   return NextResponse.json({
     success: true,
     source: 'google-drive-live',
-    folderId,
+    folderId: targetFolderId,
     files: liveFiles
   });
 }
