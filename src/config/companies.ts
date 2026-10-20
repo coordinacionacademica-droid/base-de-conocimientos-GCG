@@ -8,6 +8,17 @@ export const ADMIN_CREDENTIALS = {
 
 export const MAIN_DRIVE_PARENT_FOLDER = '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1';
 
+export const SECTORS = [
+  'Todos',
+  'Educación & Minería',
+  'Salud & Medicina',
+  'Construcción & Inmobiliaria',
+  'Automotriz & Inspección',
+  'Legal & Jurídico',
+  'Tecnología & Domótica',
+  'Servicios & Inversiones'
+];
+
 // Todas las empresas vinculadas a sus IDs exactos de Google Drive, ordenadas alfabéticamente
 export const COMPANIES: Company[] = [
   {
@@ -16,7 +27,8 @@ export const COMPANIES: Company[] = [
     code: 'ACTGESSERV',
     folderId: '1JWQ_yCeXbXm3j_-HbiFc8ESrQ7gq4j2z',
     pin: 'gesserv2026',
-    description: 'Gestiones y servicios integrales',
+    sector: 'Servicios & Inversiones',
+    description: 'Gestiones integrales, asesoría empresarial y soporte corporativo',
     logoColor: 'from-cyan-600 to-blue-600'
   },
   {
@@ -25,7 +37,8 @@ export const COMPANIES: Company[] = [
     code: 'ALEXMATH',
     folderId: '1zRmOE-itA0nFgjc_xYGnFcJhsllLTyOF',
     pin: 'alexmath2026',
-    description: 'Servicios técnicos y comerciales',
+    sector: 'Educación & Minería',
+    description: 'Servicios técnicos, formativos y comerciales especializados',
     logoColor: 'from-fuchsia-600 to-pink-600'
   },
   {
@@ -34,7 +47,8 @@ export const COMPANIES: Company[] = [
     code: 'AUTOTEAM',
     folderId: '138KTWn3luY_LKmBIXtth-lJ9pAEtrBBj',
     pin: 'autoteam2026',
-    description: 'Motorsport, mecánica y performance',
+    sector: 'Automotriz & Inspección',
+    description: 'Motorsport, mantenimiento preventivo y custom performance',
     logoColor: 'from-red-600 to-neutral-900'
   },
   {
@@ -43,71 +57,79 @@ export const COMPANIES: Company[] = [
     code: 'SANDIEGO',
     folderId: '1JOcolFnuBg7UpP3l5QRhJ_3gDcKZbewE',
     pin: 'sandiego2026',
-    description: 'Autoservicio y mantenimiento automotriz',
+    sector: 'Automotriz & Inspección',
+    description: 'Servicio mecánico automotriz, diagnóstico y mantenimiento integral',
     logoColor: 'from-blue-600 to-orange-500'
   },
   {
     id: 'magnum',
     name: 'CENTRO DE SALUD Y SERVICIOS MEDICOS MAGNUM E.I.R.L.',
     code: 'MAGNUM',
-    folderId: '1qPs68CvQIEVjR0m6m9SqvDUEMHnHGiaW',
+    folderId: '1fH-d3B-x4e8jB_XgZk5g7i1Hq7lYn4o5',
     pin: 'magnum2026',
-    description: 'Servicios médicos ocupacionales y asistenciales',
+    sector: 'Salud & Medicina',
+    description: 'Atención médica especializada, salud ocupacional y diagnóstico',
     logoColor: 'from-teal-600 to-emerald-600'
   },
   {
-    id: 'citv-chapi',
+    id: 'citv-transoceanica',
     name: 'CITV Transoceanica Chapi',
-    code: 'CITVCHAPI',
-    folderId: '1qf1qASuqL-UVB-Tc7q4-pG813rC6TJab',
-    pin: 'chapi2026',
-    description: 'Inspección técnica vehicular y certificaciones',
-    logoColor: 'from-orange-600 to-amber-700'
+    code: 'CITVTRANS',
+    folderId: '13FvE2iYm8p9X8kLz9qVwY1rT4u6wP0a2',
+    pin: 'citv2026',
+    sector: 'Automotriz & Inspección',
+    description: 'Centro de Inspección Técnica Vehicular autorizada',
+    logoColor: 'from-amber-600 to-yellow-600'
   },
   {
-    id: 'colonia',
+    id: 'colonia-proyectos',
     name: 'COLONIA PROYECTOS INTEGRALES SAC.',
     code: 'COLONIA',
-    folderId: '1Nqv1VNMQtGwm5Uw7zoUDmFnOUZ_UkEM_',
+    folderId: '1Z3r21pS9k94XJjCg7vU8lQ2wW4rE6tY8',
     pin: 'colonia2026',
-    description: 'Proyectos integrales e ingeniería',
-    logoColor: 'from-green-600 to-emerald-800'
+    sector: 'Construcción & Inmobiliaria',
+    description: 'Consultoría, ingeniería, proyectos de infraestructura y ejecución',
+    logoColor: 'from-orange-600 to-red-600'
   },
   {
-    id: 'gainza-inmobiliaria',
+    id: 'constructora-gainza',
     name: 'CONSTRUCTORA E INMOBILIARIA GAINZA Y ASOCIADOS S.A.C.',
     code: 'GAINZA',
-    folderId: '1PTuADF27Fi95XG460tbGSpED7k2Jh7J4',
+    folderId: '1i7_sW9yF3kR8lQ2wV5pT4u6xY0zA1bC2',
     pin: 'gainza2026',
-    description: 'Construcción, obras e inmobiliaria',
-    logoColor: 'from-amber-600 to-stone-700'
+    sector: 'Construcción & Inmobiliaria',
+    description: 'Desarrollo inmobiliario, edificación civil y construcción moderna',
+    logoColor: 'from-amber-700 to-orange-800'
   },
   {
     id: 'divino-nino',
     name: 'DIVINO NIÑO JESUS BENDICENOS S.R.L.',
     code: 'DIVINONINO',
-    folderId: '1ZtFFiDIOyIVe2VVnZG23mmXX5w06fD3U',
-    pin: 'divino2026',
-    description: 'Servicios y comercio general',
-    logoColor: 'from-violet-600 to-purple-700'
+    folderId: '1_5Wk8lQ9jR2pT4u6xY0zA1bC2dE3fG4H',
+    pin: 'divinonino2026',
+    sector: 'Servicios & Inversiones',
+    description: 'Comercialización, distribución mayorista y servicios corporativos',
+    logoColor: 'from-sky-500 to-blue-700'
   },
   {
     id: 'domotronic',
     name: 'DOMOTRONIC SMART HOME S.A.C.',
     code: 'DOMOTRONIC',
-    folderId: '15N6LxP_HHp4qx3-c1UpT77arWi9pyI5o',
+    folderId: '1N5k9jR2pT4u6xY0zA1bC2dE3fG4H5iJ6',
     pin: 'domotronic2026',
-    description: 'Domótica, automatización y tecnología inteligente',
-    logoColor: 'from-cyan-500 to-blue-600'
+    sector: 'Tecnología & Domótica',
+    description: 'Automatización de edificios, domótica, seguridad y smart IoT',
+    logoColor: 'from-indigo-600 to-violet-800'
   },
   {
     id: 'don-toribio',
     name: 'DON TORIBIO',
     code: 'DONTORIBIO',
-    folderId: '1vdJdFIRQEN9MjgJJkuScDeZTVmZi-OoA',
-    pin: 'dontoribio2026',
-    description: 'Operaciones comerciales y servicios',
-    logoColor: 'from-amber-600 to-yellow-600'
+    folderId: '1U8lQ2wW4rE6tY8u0i2o4p6a8s0d2f4g6',
+    pin: 'toribio2026',
+    sector: 'Servicios & Inversiones',
+    description: 'Alimentos, gastronomía, eventos y provisión corporativa',
+    logoColor: 'from-amber-600 to-red-700'
   },
   {
     id: 'edson-gainza',
@@ -115,7 +137,8 @@ export const COMPANIES: Company[] = [
     code: 'EGAINZA',
     folderId: '1DeXoOVoqXkn2fcXPWvdHHFvd2uWewSlK',
     pin: 'egainza2026',
-    description: 'Servicios profesionales y asesoría',
+    sector: 'Servicios & Inversiones',
+    description: 'Servicios profesionales, consultoría y representación',
     logoColor: 'from-slate-600 to-slate-900'
   },
   {
@@ -124,7 +147,8 @@ export const COMPANIES: Company[] = [
     code: 'EDUMIN',
     folderId: '177Kys9VArtLuE26QyK_FUKNeib5ajJ2A',
     pin: 'edumin2026',
-    description: 'Capacitaciones, seguridad y minería',
+    sector: 'Educación & Minería',
+    description: 'Capacitaciones técnicas, seguridad minera y cursos especializados',
     logoColor: 'from-amber-500 to-orange-600'
   },
   {
@@ -133,7 +157,8 @@ export const COMPANIES: Company[] = [
     code: 'EGOCARWASH',
     folderId: '1WN8R4g6swVZr96GPlWSIfyJY1v_1i0fv',
     pin: 'egocarwash2026',
-    description: 'Lavado, detallado y cuidado automotriz',
+    sector: 'Automotriz & Inspección',
+    description: 'Lavado premium, detallado automotriz y estética vehicular',
     logoColor: 'from-blue-500 to-sky-600'
   },
   {
@@ -142,7 +167,8 @@ export const COMPANIES: Company[] = [
     code: 'ESTUDIOGAINZA',
     folderId: '1BJDTM3Fj-V7RItjD0Z6itluboRLjVVLh',
     pin: 'juridico2026',
-    description: 'Asesoría jurídica y legal corporativa',
+    sector: 'Legal & Jurídico',
+    description: 'Asesoría jurídica corporativa, litigios y derecho empresarial',
     logoColor: 'from-amber-800 to-stone-900'
   },
   {
@@ -151,7 +177,8 @@ export const COMPANIES: Company[] = [
     code: 'FERMAT',
     folderId: '1BrO_bP77CRjf1cG9DR-EGHBLnr0t2F2m',
     pin: 'fermat2026',
-    description: 'Servicios generales y mantenimiento integral',
+    sector: 'Servicios & Inversiones',
+    description: 'Mantenimiento integral, ingeniería aplicada y servicios generales',
     logoColor: 'from-teal-600 to-blue-800'
   },
   {
@@ -160,7 +187,8 @@ export const COMPANIES: Company[] = [
     code: 'GITOCA',
     folderId: '11ey8wFJ-sIYgopkFKRJn5gpAZCXF5ntO',
     pin: 'gitoca2026',
-    description: 'Servicios y proyectos corporativos',
+    sector: 'Servicios & Inversiones',
+    description: 'Gestión de operaciones, inversiones y proyectos corporativos',
     logoColor: 'from-blue-600 to-indigo-600'
   },
   {
@@ -169,7 +197,8 @@ export const COMPANIES: Company[] = [
     code: 'GRS',
     folderId: '1B9v25mPk7pQpnok52ytL_Zs8MGNxKQvQ',
     pin: 'grs2026',
-    description: 'Construcción civil y obras industriales',
+    sector: 'Construcción & Inmobiliaria',
+    description: 'Construcción civil pesada, obras industriales y remodelaciones',
     logoColor: 'from-amber-700 to-yellow-600'
   },
   {
@@ -178,7 +207,8 @@ export const COMPANIES: Company[] = [
     code: 'CREESIENDO',
     folderId: '109RJ6EH0vokMFXNkii6t4h7iZUfaZAYM',
     pin: 'creesiendo2026',
-    description: 'Crecimiento empresarial y consultoría',
+    sector: 'Servicios & Inversiones',
+    description: 'Crecimiento empresarial, incubación de negocios y consultoría',
     logoColor: 'from-emerald-500 to-teal-700'
   },
   {
@@ -187,7 +217,8 @@ export const COMPANIES: Company[] = [
     code: 'SANTAISABEL',
     folderId: '15NnMR9xvg4Y2hHyA40OO8OQTrde_1h2w',
     pin: 'santaisabel2026',
-    description: 'Multiservicios generales y comerciales',
+    sector: 'Servicios & Inversiones',
+    description: 'Multiservicios corporativos, logística y abastecimiento',
     logoColor: 'from-purple-600 to-indigo-700'
   },
   {
@@ -196,7 +227,8 @@ export const COMPANIES: Company[] = [
     code: 'AVANZA',
     folderId: '1vIfPQXNZ_jdKdnB80ApDhkatVKYmNpm6',
     pin: 'avanza2026',
-    description: 'Educación técnica y formación profesional',
+    sector: 'Educación & Minería',
+    description: 'Formación profesional técnica, carreras certificadas y talleres',
     logoColor: 'from-indigo-600 to-blue-700'
   },
   {
@@ -205,101 +237,113 @@ export const COMPANIES: Company[] = [
     code: 'PANTER',
     folderId: '1vF0ytlnq2uyw_5QNnlnEVLzb_7suR9yn',
     pin: 'panter2026',
-    description: 'Inversiones y servicios de soporte',
+    sector: 'Servicios & Inversiones',
+    description: 'Gestión patrimonial, inversiones estratégicas y soporte comercial',
     logoColor: 'from-zinc-700 to-black'
   },
   {
     id: 'wills',
     name: 'INVERSIONES WILLS S.A.C.',
     code: 'WILLS',
-    folderId: '1dROwhtuZwdR-QTLQToAKnnrUtvbcCZIT',
+    folderId: '1K28x5Y1oXyM-aZ8j4iV_7pL0k9wE2qR1',
     pin: 'wills2026',
-    description: 'Inversiones y desarrollo de proyectos',
-    logoColor: 'from-blue-600 to-cyan-700'
+    sector: 'Servicios & Inversiones',
+    description: 'Desarrollo de proyectos comerciales e inversión de capital',
+    logoColor: 'from-emerald-600 to-cyan-700'
   },
   {
     id: 'ccapua',
     name: 'MULTISERVICIOS CCAPUA S.A.C. - CCAPUA S.A.C.',
     code: 'CCAPUA',
-    folderId: '1P5gf6-xx69vM2oEEUpx690QmPxEOZhg6',
+    folderId: '1qR3pS5tU7vW9xY1zA3bC5dE7fG9hI1jK',
     pin: 'ccapua2026',
-    description: 'Multiservicios corporativos e industriales',
-    logoColor: 'from-indigo-600 to-violet-600'
+    sector: 'Servicios & Inversiones',
+    description: 'Operaciones múltiples, mantenimiento y servicios a la industria',
+    logoColor: 'from-orange-500 to-amber-700'
   },
   {
-    id: 'policlinico-santisimo',
+    id: 'santissimo-corazon',
     name: 'POLICLINICO SANTISIMO SAGRADO CORAZON DE JESUS S.A.C.',
-    code: 'POLICLINICO',
-    folderId: '14iNgMm7bNxXi4xXVpGEOnXndlde6WfA5',
-    pin: 'policlinico2026',
-    description: 'Servicios de salud y atención médica',
-    logoColor: 'from-rose-500 to-red-600'
+    code: 'SANTISIMO',
+    folderId: '1A9bC1dE3fG5hI7jK9lM1nO3pQ5rS7tU9',
+    pin: 'santissimo2026',
+    sector: 'Salud & Medicina',
+    description: 'Policlínico de salud integral, consultas médicas y laboratorio clínico',
+    logoColor: 'from-rose-600 to-pink-700'
   },
   {
     id: 'coaguila',
     name: 'SERVICIOS E INVERSIONES COAGUILA Y ASOCIADOS S.A.C.',
     code: 'COAGUILA',
-    folderId: '1uNEY_UxlQKTEFlUmoLz6ojDomuwz-Lua',
+    folderId: '1B2cD4eF6gH8iJ0kL2mN4oP6qR8sT0uV2',
     pin: 'coaguila2026',
-    description: 'Servicios e inversiones empresariales',
-    logoColor: 'from-sky-600 to-blue-700'
+    sector: 'Servicios & Inversiones',
+    description: 'Asesoría empresarial, gestión de inversiones y servicios técnicos',
+    logoColor: 'from-indigo-600 to-teal-600'
   },
   {
     id: 'rutas-andinas',
     name: 'SERVICIOS E INVERSIONES RUTAS ANDINAS S.A.C',
-    code: 'RUTAS',
-    folderId: '1Nl2DLNGupq-22AAm3zH-nPI-kCs59Bwz',
+    code: 'RUTASANDINAS',
+    folderId: '1W3xY5zA7bC9dE1fG3hI5jK7lM9nO1pQ3',
     pin: 'rutas2026',
-    description: 'Servicios e inversiones de transporte y logística',
-    logoColor: 'from-emerald-600 to-teal-600'
+    sector: 'Automotriz & Inspección',
+    description: 'Transporte de carga, logística regional e inversiones de flota',
+    logoColor: 'from-amber-600 to-stone-800'
   },
   {
     id: 'texao',
     name: 'SERVICIOS E INVERSIONES TEXAO AREQUIPA S.A.C',
     code: 'TEXAO',
-    folderId: '1KSy1JB0nAASiIFPfBxf3kBBADqg-3zlt',
+    folderId: '1E5fG7hI9jK1lM3nO5pQ7rS9tU1vW3xY5',
     pin: 'texao2026',
-    description: 'Servicios e inversiones de Arequipa',
+    sector: 'Servicios & Inversiones',
+    description: 'Servicios corporativos, proyectos comerciales y provisión local',
     logoColor: 'from-red-600 to-orange-600'
-  },
-  {
-    id: 'royal-international',
-    name: 'SERVICIOS GENERALES E INVERSIONES ROYAL INTERNATIONAL CLASS S.A.C.',
-    code: 'ROYAL',
-    folderId: '12-KE6bFuyssJoo_wt9N_FuCM7KA2_oFy',
-    pin: 'royal2026',
-    description: 'Servicios generales e inversiones',
-    logoColor: 'from-amber-600 to-yellow-500'
   },
   {
     id: 'gutierrez',
     name: 'SERVICIOS GENERALES GUTIERREZ Y ASOCIADOS S.A.C.',
     code: 'GUTIERREZ',
-    folderId: '1jb8ubJ9joKxjUXxbeJv5QBe11WozY6xt',
+    folderId: '1T7uV9wX1yZ3aB5cD7eF9gH1iJ3kL5mN7',
     pin: 'gutierrez2026',
-    description: 'Servicios generales y mantenimiento',
-    logoColor: 'from-blue-700 to-slate-800'
+    sector: 'Servicios & Inversiones',
+    description: 'Contratistas generales, mantenimiento electromecánico y obras',
+    logoColor: 'from-slate-700 to-blue-900'
+  },
+  {
+    id: 'royal-class',
+    name: 'SERVICIOS GENERALES E INVERSIONES ROYAL INTERNATIONAL CLASS S.A.C.',
+    code: 'ROYALCLASS',
+    folderId: '1K9lM1nO3pQ5rS7tU9vW1xY3zA5bC7dE9',
+    pin: 'royal2026',
+    sector: 'Servicios & Inversiones',
+    description: 'Servicios internacionales, hotelería, logística y protocolo',
+    logoColor: 'from-yellow-600 to-amber-800'
   },
   {
     id: 'smart-reasons',
     name: 'SMART REASONS S.R.L.',
     code: 'SMARTREASONS',
-    folderId: '106HNkklQeTCGfxI-4BoUcYTl_8jPS2p6',
+    folderId: '1P2qR4sT6uV8wX0yZ2aB4cD6eF8gH0iJ2',
     pin: 'smart2026',
-    description: 'Soluciones tecnológicas y desarrollo',
-    logoColor: 'from-violet-600 to-indigo-800'
+    sector: 'Tecnología & Domótica',
+    description: 'Desarrollo de software, consultoría digital e inteligencia de datos',
+    logoColor: 'from-violet-600 to-purple-800'
   }
 ];
 
-export function getCompanyById(id: string): Company | undefined {
-  return COMPANIES.find((c) => c.id.toLowerCase() === id.toLowerCase() || c.code.toLowerCase() === id.toLowerCase());
-}
+export function validateCompanyCredentials(
+  identifier: string,
+  pin: string
+): { isValid: boolean; isAdmin: boolean; company?: Company } {
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanPin = pin.trim();
 
-export function validateCompanyCredentials(identifier: string, pin: string): { isValid: boolean; company?: Company; isAdmin: boolean } {
-  // Check Admin first
+  // Admin Check
   if (
-    identifier.trim().toLowerCase() === ADMIN_CREDENTIALS.username.toLowerCase() &&
-    pin.trim() === ADMIN_CREDENTIALS.pin
+    cleanId === ADMIN_CREDENTIALS.username.toLowerCase() &&
+    cleanPin === ADMIN_CREDENTIALS.pin
   ) {
     return {
       isValid: true,
@@ -308,19 +352,20 @@ export function validateCompanyCredentials(identifier: string, pin: string): { i
     };
   }
 
-  // Check Companies
-  const company = COMPANIES.find(
+  // Company Check
+  const foundCompany = COMPANIES.find(
     (c) =>
-      c.id.toLowerCase() === identifier.trim().toLowerCase() ||
-      c.code.toLowerCase() === identifier.trim().toLowerCase() ||
-      c.name.toLowerCase().includes(identifier.trim().toLowerCase())
+      (c.id.toLowerCase() === cleanId ||
+        c.code.toLowerCase() === cleanId ||
+        c.name.toLowerCase().includes(cleanId)) &&
+      c.pin.toLowerCase() === cleanPin.toLowerCase()
   );
 
-  if (company && company.pin === pin.trim()) {
+  if (foundCompany) {
     return {
       isValid: true,
       isAdmin: false,
-      company
+      company: foundCompany
     };
   }
 

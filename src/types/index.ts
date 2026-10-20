@@ -4,6 +4,7 @@ export interface Company {
   code: string;
   folderId: string;
   pin: string;
+  sector?: string;
   description?: string;
   logoColor?: string;
 }
