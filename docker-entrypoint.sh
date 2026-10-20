@@ -14,6 +14,7 @@ DB_DATABASE="${DB_DATABASE:-test}"
 DB_USERNAME="${DB_USERNAME:-3n6CfkUrJM3jSZ8.root}"
 DB_PASSWORD="${DB_PASSWORD:-vSZiGReW2XZqemXJ}"
 STORAGE_TYPE="${STORAGE_TYPE:-local}"
+ALLOWED_IFRAME_SOURCES="${ALLOWED_IFRAME_SOURCES:-https://*.google.com https://drive.google.com https://docs.google.com https://*.draw.io https://*.youtube.com https://*.youtube-nocookie.com https://*.vimeo.com}"
 
 # Auto-correct typo if DB_HOST contains us2-east-1
 DB_HOST=$(echo "$DB_HOST" | sed 's/us2-east-1/us-east-1/g')
@@ -66,6 +67,7 @@ DB_USERNAME=${DB_USERNAME}
 DB_PASSWORD=${DB_PASSWORD}
 MYSQL_ATTR_SSL_CA=${MYSQL_ATTR_SSL_CA}
 STORAGE_TYPE=${STORAGE_TYPE}
+ALLOWED_IFRAME_SOURCES="${ALLOWED_IFRAME_SOURCES}"
 EOF
 
 # Run database migrations in background without blocking web server startup
