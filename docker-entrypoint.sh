@@ -65,10 +65,8 @@ MYSQL_ATTR_SSL_CA=${MYSQL_ATTR_SSL_CA}
 STORAGE_TYPE=${STORAGE_TYPE}
 EOF
 
-# Run database migrations
-echo "Executing database migrations..."
-php artisan migrate --force --no-interaction
-echo "Database migrations completed successfully."
+# Run database migrations in background without blocking web server startup
+(php artisan migrate --force --no-interaction 2>&1 || true) &
 
 echo "Starting BookStack web server on port ${PORT}..."
 exec apache2-foreground
