@@ -1,9 +1,12 @@
 #!/bin/sh
 set -e
 
-# Default configurations (ensures application works even if hosting variables are pending deploy)
+# Default configurations
 APP_KEY="${APP_KEY:-base64:A+kCMJRLVEr/LTks92jFd0JTq74Lk04FYekgqpsSuyo=}"
 APP_URL="${APP_URL:-https://base-de-conocimientos-gcg-production-4da7.up.railway.app}"
+APP_PROXIES="${APP_PROXIES:-*}"
+APP_DEBUG="${APP_DEBUG:-true}"
+LOG_CHANNEL="${LOG_CHANNEL:-errorlog}"
 DB_CONNECTION="${DB_CONNECTION:-mysql}"
 DB_HOST="${DB_HOST:-gateway01.us-east-1.prod.aws.tidbcloud.com}"
 DB_PORT="${DB_PORT:-4000}"
@@ -16,6 +19,7 @@ echo "=================================================="
 echo "=== BookStack Startup Diagnostics ==="
 echo "PORT: ${PORT:-80}"
 echo "APP_URL: ${APP_URL}"
+echo "APP_PROXIES: ${APP_PROXIES}"
 echo "DB_HOST: ${DB_HOST}"
 echo "DB_PORT: ${DB_PORT}"
 echo "DB_DATABASE: ${DB_DATABASE}"
@@ -37,18 +41,20 @@ PORT="${PORT:-80}"
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf 2>/dev/null || true
 sed -i "s/:80/:${PORT}/g" /etc/apache2/sites-available/*.conf 2>/dev/null || true
 
-# Fix storage and cache permissions
-mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs storage/uploads public/uploads bootstrap/cache
+# Fix storage, session, cache and log permissions
+mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs storage/uploads public/uploads bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache public/uploads
-chmod -R 775 storage bootstrap/cache public/uploads
+chmod -R 777 storage bootstrap/cache public/uploads
 
 # Generate /app/.env dynamically so Laravel Dotenv always has access to the configuration
 echo "Generating /app/.env configuration..."
 cat <<EOF > /app/.env
 APP_KEY=${APP_KEY}
 APP_URL=${APP_URL}
+APP_PROXIES=${APP_PROXIES}
 APP_ENV=${APP_ENV:-production}
-APP_DEBUG=${APP_DEBUG:-false}
+APP_DEBUG=${APP_DEBUG}
+LOG_CHANNEL=${LOG_CHANNEL}
 DB_CONNECTION=${DB_CONNECTION}
 DB_HOST=${DB_HOST}
 DB_PORT=${DB_PORT}
