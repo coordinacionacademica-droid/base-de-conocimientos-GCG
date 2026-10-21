@@ -80,6 +80,45 @@ export default function DashboardPage() {
     }
   }, [router]);
 
+  // 1.1 Discover and load all company logos automatically on load
+  useEffect(() => {
+    // A. Read locally saved logos first for instant 0ms rendering
+    try {
+      const savedLogosStr = localStorage.getItem('gcg_company_logos');
+      if (savedLogosStr) {
+        const savedLogos: Record<string, string> = JSON.parse(savedLogosStr);
+        setCompaniesList((prev) =>
+          prev.map((c) => (savedLogos[c.id] ? { ...c, logoUrl: savedLogos[c.id] } : c))
+        );
+      }
+    } catch (_) {}
+
+    // B. Fetch live logos from /api/logos in the background
+    const fetchAllLogos = async () => {
+      try {
+        const res = await fetch('/api/logos');
+        const data = await res.json();
+        if (data.success && data.logos) {
+          const logosMap: Record<string, string> = data.logos;
+          setCompaniesList((prev) =>
+            prev.map((c) => (logosMap[c.id] ? { ...c, logoUrl: logosMap[c.id] } : c))
+          );
+          try {
+            const currentSaved = JSON.parse(localStorage.getItem('gcg_company_logos') || '{}');
+            localStorage.setItem(
+              'gcg_company_logos',
+              JSON.stringify({ ...currentSaved, ...logosMap })
+            );
+          } catch (_) {}
+        }
+      } catch (err) {
+        console.error('Error cargando logos corporativos:', err);
+      }
+    };
+
+    fetchAllLogos();
+  }, []);
+
   // 2. Fetch Files for active folder (with cache safety and silent background sync)
   const loadFiles = async (folderId: string, isSilent = false) => {
     if (!folderId) return;
@@ -111,6 +150,13 @@ export default function DashboardPage() {
               c.id === currentCompany.id ? { ...c, logoUrl: data.detectedLogo } : c
             )
           );
+          try {
+            const currentSaved = JSON.parse(localStorage.getItem('gcg_company_logos') || '{}');
+            localStorage.setItem(
+              'gcg_company_logos',
+              JSON.stringify({ ...currentSaved, [currentCompany.id]: data.detectedLogo })
+            );
+          } catch (_) {}
         }
       }
     } catch (err) {
