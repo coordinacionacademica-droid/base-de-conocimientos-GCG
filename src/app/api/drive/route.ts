@@ -3,6 +3,15 @@ import { getFileCategory } from '@/lib/drive';
 import { DriveFileItem } from '@/types';
 import { MAIN_DRIVE_PARENT_FOLDER } from '@/config/companies';
 
+interface CacheEntry {
+  data: { files: DriveFileItem[]; detectedLogo: string | null };
+  timestamp: number;
+}
+
+// In-memory cache to protect against Google rate limits and avoid any production crashes
+const driveFolderCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 25000; // 25 seconds cache
+
 // Helper function to scrape live files and subfolders from public embeddedfolderview
 async function fetchLiveDriveFolder(
   folderId: string
@@ -80,15 +89,36 @@ async function fetchLiveDriveFolder(
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const targetFolderId = searchParams.get('folderId') || MAIN_DRIVE_PARENT_FOLDER;
+  const forceRefresh = searchParams.get('force') === 'true';
+
+  // Check in-memory cache if not forcing refresh
+  const now = Date.now();
+  const cached = driveFolderCache.get(targetFolderId);
+
+  if (!forceRefresh && cached && now - cached.timestamp < CACHE_TTL_MS) {
+    return NextResponse.json({
+      success: true,
+      source: 'cache-safe',
+      folderId: targetFolderId,
+      files: cached.data.files,
+      detectedLogo: cached.data.detectedLogo
+    });
+  }
 
   // Fetch real-time files and subfolders from Google Drive
-  const { files: liveFiles, detectedLogo } = await fetchLiveDriveFolder(targetFolderId);
+  const result = await fetchLiveDriveFolder(targetFolderId);
+
+  // Store in cache
+  driveFolderCache.set(targetFolderId, {
+    data: result,
+    timestamp: now
+  });
 
   return NextResponse.json({
     success: true,
     source: 'google-drive-live',
     folderId: targetFolderId,
-    files: liveFiles,
-    detectedLogo
+    files: result.files,
+    detectedLogo: result.detectedLogo
   });
 }

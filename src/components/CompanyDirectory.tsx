@@ -74,14 +74,24 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur-md border border-white/10">
-              <div className="text-2xl font-black text-white">{companies.length}</div>
-              <div className="text-[11px] font-medium text-blue-200 uppercase tracking-wider">Empresas</div>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href="https://solicitudvacaciones-one.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-xs font-bold text-slate-900 shadow-md transition hover:bg-slate-100 hover:shadow-lg"
+            >
+              <span>Solicitud de Vacaciones</span>
+              <ExternalLink className="h-3.5 w-3.5 text-emerald-600" />
+            </a>
+
+            <div className="rounded-2xl bg-white/10 p-3 text-center backdrop-blur-md border border-white/10">
+              <div className="text-xl font-black text-white">{companies.length}</div>
+              <div className="text-[10px] font-medium text-blue-200 uppercase tracking-wider">Empresas</div>
             </div>
-            <div className="rounded-2xl bg-white/10 p-4 text-center backdrop-blur-md border border-white/10">
-              <div className="text-2xl font-black text-emerald-300">100%</div>
-              <div className="text-[11px] font-medium text-blue-200 uppercase tracking-wider">Cloud Drive</div>
+            <div className="rounded-2xl bg-white/10 p-3 text-center backdrop-blur-md border border-white/10">
+              <div className="text-xl font-black text-emerald-300">100%</div>
+              <div className="text-[10px] font-medium text-blue-200 uppercase tracking-wider">Cloud Drive</div>
             </div>
           </div>
         </div>

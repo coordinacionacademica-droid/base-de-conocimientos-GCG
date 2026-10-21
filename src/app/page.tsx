@@ -11,6 +11,7 @@ import { FileGrid } from '@/components/FileGrid';
 import { FileList } from '@/components/FileList';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { UploadModal } from '@/components/UploadModal';
+import { KnowledgeBaseView } from '@/components/KnowledgeBaseView';
 import {
   FolderUp,
   CheckCircle2,
@@ -22,8 +23,9 @@ import {
   Folder,
   HardDrive,
   Star,
-  Building2,
-  Sparkles
+  BookOpen,
+  CalendarCheck,
+  ExternalLink
 } from 'lucide-react';
 
 interface FolderBreadcrumb {
@@ -37,6 +39,7 @@ export default function DashboardPage() {
   const [currentCompany, setCurrentCompany] = useState<Company>(COMPANIES[0]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<'directory' | 'company'>('company');
+  const [companySection, setCompanySection] = useState<'files' | 'knowledge'>('files');
   const [activeFolderId, setActiveFolderId] = useState<string>('');
   const [folderHistory, setFolderHistory] = useState<FolderBreadcrumb[]>([]);
   const [files, setFiles] = useState<DriveFileItem[]>([]);
@@ -77,7 +80,7 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  // 2. Fetch Files for active folder (supports silent background auto-sync)
+  // 2. Fetch Files for active folder (with cache safety and silent background sync)
   const loadFiles = async (folderId: string, isSilent = false) => {
     if (!folderId) return;
     if (!isSilent) setIsLoading(true);
@@ -125,7 +128,7 @@ export default function DashboardPage() {
 
   // 3. Real-Time Auto-Sync:
   // a) As soon as the user returns from Google Drive (tab focus / visibility)
-  // b) Silent background heartbeat polling every 15 seconds
+  // b) Silent background heartbeat polling every 30 seconds
   useEffect(() => {
     if (activeTab !== 'company' || !activeFolderId) return;
 
@@ -138,12 +141,12 @@ export default function DashboardPage() {
     window.addEventListener('focus', handleSync);
     document.addEventListener('visibilitychange', handleSync);
 
-    // Silent background poll every 15 seconds
+    // Silent background poll every 30 seconds
     const interval = setInterval(() => {
       if (document.visibilityState === 'visible') {
         loadFiles(activeFolderId, true);
       }
-    }, 15000);
+    }, 30000);
 
     return () => {
       window.removeEventListener('focus', handleSync);
@@ -174,7 +177,7 @@ export default function DashboardPage() {
     );
   };
 
-  // 3. Category Counts
+  // Category Counts
   const fileCounts = useMemo(() => {
     return {
       all: files.length,
@@ -186,12 +189,12 @@ export default function DashboardPage() {
     };
   }, [files]);
 
-  // 4. Pinned Files
+  // Pinned Files
   const pinnedFiles = useMemo(() => {
     return files.filter((f) => f.isPinned);
   }, [files]);
 
-  // 5. Filter and Search
+  // Filter and Search
   const filteredFiles = useMemo(() => {
     return files.filter((file) => {
       const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -210,6 +213,7 @@ export default function DashboardPage() {
     setActiveFolderId(selected.folderId);
     setFolderHistory([{ id: selected.folderId, name: selected.name }]);
     setActiveTab('company');
+    setCompanySection('files');
   };
 
   // Subfolder Navigation
@@ -250,7 +254,7 @@ export default function DashboardPage() {
             onSelectCompany={handleSelectCompanyFromDirectory}
           />
         ) : (
-          /* VIEW 2: SINGLE COMPANY REPOSITORY */
+          /* VIEW 2: SINGLE COMPANY REPOSITORY & KNOWLEDGE BASE */
           <div className="space-y-6">
             {/* Top Navigation Row: Back Button + Breadcrumbs + Actions */}
             <div className="flex flex-wrap items-center justify-between gap-3">
@@ -287,8 +291,19 @@ export default function DashboardPage() {
                 ))}
               </div>
 
-              {/* Direct Drive Button */}
-              <div className="flex items-center gap-2">
+              {/* Direct Actions: Solicitud de Vacaciones + Google Drive */}
+              <div className="flex flex-wrap items-center gap-2">
+                <a
+                  href="https://solicitudvacaciones-one.vercel.app/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-emerald-300 bg-emerald-50 px-3.5 py-1.5 text-xs font-bold text-emerald-800 shadow-xs transition hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                >
+                  <CalendarCheck className="h-3.5 w-3.5 text-emerald-600" />
+                  <span>Solicitar Vacaciones</span>
+                  <ExternalLink className="h-3 w-3 opacity-60" />
+                </a>
+
                 <button
                   type="button"
                   onClick={() => setIsUploadOpen(true)}
@@ -305,7 +320,7 @@ export default function DashboardPage() {
                   className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
                 >
                   <FolderUp className="h-3.5 w-3.5 text-blue-600" />
-                  <span className="hidden sm:inline">Abrir en Google Drive</span>
+                  <span className="hidden sm:inline">Google Drive</span>
                   <ArrowUpRight className="h-3 w-3 opacity-60" />
                 </a>
               </div>
@@ -336,10 +351,10 @@ export default function DashboardPage() {
                         <Cloud className="h-3.5 w-3.5" /> Google Drive en vivo
                       </span>
                       <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 backdrop-blur-xs">
-                        <CheckCircle2 className="h-3.5 w-3.5" /> Sincronización instantánea
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Sincronización continua
                       </span>
                       <span className="inline-flex items-center gap-1 rounded-full bg-blue-400/20 px-2.5 py-0.5 text-xs font-medium text-blue-200 backdrop-blur-xs">
-                        <HardDrive className="h-3.5 w-3.5" /> 0 MB Servidor Vercel
+                        <HardDrive className="h-3.5 w-3.5" /> 0 MB Servidor
                       </span>
                     </div>
                     <h2 className="text-xl font-black sm:text-2xl">{currentFolderDisplayName}</h2>
@@ -356,126 +371,161 @@ export default function DashboardPage() {
                     className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-sm transition hover:bg-slate-100 hover:shadow-md"
                   >
                     <FolderUp className="h-4 w-4 text-blue-600" />
-                    <span>Subir a esta carpeta</span>
+                    <span>Subir Archivos a Drive</span>
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Pinned Files Showcase (⭐ Archivos Destacados) */}
-            {pinnedFiles.length > 0 && (
-              <div className="rounded-3xl border border-amber-200/80 bg-amber-50/30 p-4 dark:border-amber-900/30 dark:bg-amber-950/10">
-                <div className="mb-3 flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
-                  <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
-                  <span>Archivos Destacados e Indispensables ({pinnedFiles.length})</span>
+            {/* Section Switcher: [📁 Archivos] vs [📖 Base de Conocimientos & Guías] */}
+            <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3 dark:border-slate-800">
+              <button
+                onClick={() => setCompanySection('files')}
+                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold transition ${
+                  companySection === 'files'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                }`}
+              >
+                <Folder className="h-4 w-4" />
+                <span>Explorador de Archivos y Carpetas ({files.length})</span>
+              </button>
+
+              <button
+                onClick={() => setCompanySection('knowledge')}
+                className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold transition ${
+                  companySection === 'knowledge'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-blue-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300'
+                }`}
+              >
+                <BookOpen className="h-4 w-4" />
+                <span>Base de Conocimientos & Guías Paso a Paso</span>
+              </button>
+            </div>
+
+            {/* SECTION 1: ARCHIVOS */}
+            {companySection === 'files' ? (
+              <div className="space-y-6">
+                {/* Pinned Files Showcase (⭐ Archivos Destacados) */}
+                {pinnedFiles.length > 0 && (
+                  <div className="rounded-3xl border border-amber-200/80 bg-amber-50/30 p-4 dark:border-amber-900/30 dark:bg-amber-950/10">
+                    <div className="mb-3 flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                      <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
+                      <span>Archivos Destacados e Indispensables ({pinnedFiles.length})</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                      {pinnedFiles.map((file) => (
+                        <div
+                          key={file.id}
+                          onClick={() => setSelectedFile(file)}
+                          className="group flex cursor-pointer flex-col justify-between rounded-2xl border border-amber-200/90 bg-white p-2.5 shadow-xs transition hover:border-amber-400 hover:shadow-sm dark:border-amber-800/60 dark:bg-slate-900"
+                        >
+                          <div className="flex items-center justify-between">
+                            <Star className="h-3 w-3 fill-amber-400 text-amber-500" />
+                            <span className="text-[9px] font-bold uppercase text-slate-400">
+                              {file.fileCategory}
+                            </span>
+                          </div>
+                          <p className="my-1.5 line-clamp-2 text-[11px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600">
+                            {file.name}
+                          </p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTogglePin(file);
+                            }}
+                            className="text-left text-[10px] text-amber-600 hover:underline dark:text-amber-400"
+                          >
+                            Quitar destacado
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search, Filter Tabs and View Switcher */}
+                <div>
+                  <SearchAndFilters
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    selectedCategory={selectedCategory}
+                    onCategoryChange={setSelectedCategory}
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    totalFiles={filteredFiles.length}
+                    onRefresh={() => loadFiles(activeFolderId)}
+                    onOpenUpload={() => setIsUploadOpen(true)}
+                    isLoading={isLoading}
+                    fileCounts={fileCounts}
+                  />
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                  {pinnedFiles.map((file) => (
-                    <div
-                      key={file.id}
-                      onClick={() => setSelectedFile(file)}
-                      className="group flex cursor-pointer flex-col justify-between rounded-2xl border border-amber-200/90 bg-white p-2.5 shadow-xs transition hover:border-amber-400 hover:shadow-sm dark:border-amber-800/60 dark:bg-slate-900"
+
+                {/* Content Section: Grid, List or Empty State */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                    <span>
+                      Mostrando <strong>{filteredFiles.length}</strong> elemento(s) en esta carpeta
+                    </span>
+                    <button
+                      onClick={() => loadFiles(activeFolderId)}
+                      className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
                     >
-                      <div className="flex items-center justify-between">
-                        <Star className="h-3 w-3 fill-amber-400 text-amber-500" />
-                        <span className="text-[9px] font-bold uppercase text-slate-400">
-                          {file.fileCategory}
+                      🔄 Sincronizar ahora
+                    </button>
+                  </div>
+
+                  {isLoading ? (
+                    <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                        <span className="text-xs font-semibold text-slate-500">
+                          Consultando Google Drive en vivo...
                         </span>
                       </div>
-                      <p className="my-1.5 line-clamp-2 text-[11px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600">
-                        {file.name}
+                    </div>
+                  ) : files.length === 0 ? (
+                    /* Clean Empty State for New Folders */
+                    <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900/50 shadow-xs">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
+                        <FolderOpen className="h-8 w-8" />
+                      </div>
+                      <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white">
+                        Esta carpeta está vacía en Google Drive
+                      </h3>
+                      <p className="mt-1.5 max-w-md text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                        Aún no se han subido archivos a esta carpeta. Sube documentos, manuales, logos o subcarpetas en Drive y aparecerán aquí automáticamente en tiempo real.
                       </p>
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTogglePin(file);
-                        }}
-                        className="text-left text-[10px] text-amber-600 hover:underline dark:text-amber-400"
+                        onClick={() => setIsUploadOpen(true)}
+                        className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-700"
                       >
-                        Quitar destacado
+                        <FolderUp className="h-4 w-4" />
+                        <span>Subir Archivos a esta Carpeta</span>
                       </button>
                     </div>
-                  ))}
+                  ) : viewMode === 'grid' ? (
+                    <FileGrid
+                      files={filteredFiles}
+                      onOpenFile={(file) => setSelectedFile(file)}
+                      onOpenFolder={handleOpenFolder}
+                      onTogglePin={handleTogglePin}
+                    />
+                  ) : (
+                    <FileList
+                      files={filteredFiles}
+                      onOpenFile={(file) => setSelectedFile(file)}
+                      onOpenFolder={handleOpenFolder}
+                      onTogglePin={handleTogglePin}
+                    />
+                  )}
                 </div>
               </div>
+            ) : (
+              /* SECTION 2: BASE DE CONOCIMIENTOS & GUÍAS */
+              <KnowledgeBaseView companyName={currentCompany.name} />
             )}
-
-            {/* Search, Filter Tabs and View Switcher */}
-            <div>
-              <SearchAndFilters
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                selectedCategory={selectedCategory}
-                onCategoryChange={setSelectedCategory}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                totalFiles={filteredFiles.length}
-                onRefresh={() => loadFiles(activeFolderId)}
-                onOpenUpload={() => setIsUploadOpen(true)}
-                isLoading={isLoading}
-                fileCounts={fileCounts}
-              />
-            </div>
-
-            {/* Content Section: Grid, List or Empty State */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-                <span>
-                  Mostrando <strong>{filteredFiles.length}</strong> elemento(s) en esta carpeta
-                </span>
-                <button
-                  onClick={() => loadFiles(activeFolderId)}
-                  className="font-semibold text-blue-600 hover:underline dark:text-blue-400"
-                >
-                  🔄 Sincronizar ahora
-                </button>
-              </div>
-
-              {isLoading ? (
-                <div className="flex h-64 items-center justify-center rounded-3xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-xs">
-                  <div className="flex flex-col items-center gap-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
-                    <span className="text-xs font-semibold text-slate-500">
-                      Consultando Google Drive en vivo...
-                    </span>
-                  </div>
-                </div>
-              ) : files.length === 0 ? (
-                /* Clean Empty State for New Folders */
-                <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-slate-200 bg-white px-6 py-16 text-center dark:border-slate-800 dark:bg-slate-900/50 shadow-xs">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
-                    <FolderOpen className="h-8 w-8" />
-                  </div>
-                  <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white">
-                    Esta carpeta está vacía en Google Drive
-                  </h3>
-                  <p className="mt-1.5 max-w-md text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Aún no se han subido archivos a esta carpeta. Sube documentos, manuales, logos o subcarpetas en Drive y aparecerán aquí automáticamente en tiempo real.
-                  </p>
-                  <button
-                    onClick={() => setIsUploadOpen(true)}
-                    className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-blue-500/20 transition hover:bg-blue-700"
-                  >
-                    <FolderUp className="h-4 w-4" />
-                    <span>Subir Archivos a esta Carpeta</span>
-                  </button>
-                </div>
-              ) : viewMode === 'grid' ? (
-                <FileGrid
-                  files={filteredFiles}
-                  onOpenFile={(file) => setSelectedFile(file)}
-                  onOpenFolder={handleOpenFolder}
-                  onTogglePin={handleTogglePin}
-                />
-              ) : (
-                <FileList
-                  files={filteredFiles}
-                  onOpenFile={(file) => setSelectedFile(file)}
-                  onOpenFolder={handleOpenFolder}
-                  onTogglePin={handleTogglePin}
-                />
-              )}
-            </div>
           </div>
         )}
       </main>
