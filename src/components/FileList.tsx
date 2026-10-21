@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { DriveFileItem } from '@/types';
 import { formatFileSize } from '@/lib/drive';
 import {
@@ -14,18 +14,43 @@ import {
   FolderOpen,
   ArrowRight,
   ExternalLink,
-  Download
+  Download,
+  Copy,
+  Check,
+  Star,
+  Sparkles
 } from 'lucide-react';
 
 interface FileListProps {
   files: DriveFileItem[];
   onOpenFile: (file: DriveFileItem) => void;
   onOpenFolder?: (folder: DriveFileItem) => void;
+  onTogglePin?: (file: DriveFileItem) => void;
 }
 
-export const FileList: React.FC<FileListProps> = ({ files, onOpenFile, onOpenFolder }) => {
-  const getIcon = (category: DriveFileItem['fileCategory']) => {
-    switch (category) {
+export const FileList: React.FC<FileListProps> = ({
+  files,
+  onOpenFile,
+  onOpenFolder,
+  onTogglePin
+}) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopyLink = (e: React.MouseEvent, file: DriveFileItem) => {
+    e.stopPropagation();
+    const link = `https://drive.google.com/file/d/${file.id}/view`;
+    navigator.clipboard.writeText(link);
+    setCopiedId(file.id);
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const getIcon = (file: DriveFileItem) => {
+    const isLogo = /^logo\.(png|jpe?g|webp|svg)$/i.test(file.name);
+    if (isLogo) {
+      return <Sparkles className="h-4 w-4 text-indigo-600" />;
+    }
+
+    switch (file.fileCategory) {
       case 'folder':
         return <Folder className="h-4 w-4 text-amber-500 fill-amber-400/20" />;
       case 'video':
@@ -75,13 +100,36 @@ export const FileList: React.FC<FileListProps> = ({ files, onOpenFile, onOpenFol
                   className={`group cursor-pointer transition ${
                     isFolder
                       ? 'hover:bg-amber-50/40 dark:hover:bg-amber-950/20'
+                      : file.isPinned
+                      ? 'bg-amber-50/20 hover:bg-amber-50/40 dark:bg-amber-950/10'
                       : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
                   }`}
                 >
                   <td className="px-5 py-3.5 font-medium text-slate-900 dark:text-white">
                     <div className="flex items-center gap-2.5">
-                      {getIcon(file.fileCategory)}
-                      <span className={`truncate max-w-xs sm:max-w-md ${isFolder ? 'font-bold text-amber-700 dark:text-amber-400' : ''}`}>
+                      {onTogglePin && !isFolder && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onTogglePin(file);
+                          }}
+                          className={`p-0.5 rounded transition ${
+                            file.isPinned
+                              ? 'text-amber-500'
+                              : 'text-slate-300 hover:text-amber-500 opacity-0 group-hover:opacity-100'
+                          }`}
+                        >
+                          <Star
+                            className={`h-3.5 w-3.5 ${file.isPinned ? 'fill-amber-400' : ''}`}
+                          />
+                        </button>
+                      )}
+                      {getIcon(file)}
+                      <span
+                        className={`truncate max-w-xs sm:max-w-md ${
+                          isFolder ? 'font-bold text-amber-700 dark:text-amber-400' : ''
+                        }`}
+                      >
                         {file.name}
                       </span>
                     </div>
@@ -104,7 +152,10 @@ export const FileList: React.FC<FileListProps> = ({ files, onOpenFile, onOpenFol
                     {file.modifiedTime || 'En vivo'}
                   </td>
                   <td className="px-5 py-3.5 text-right">
-                    <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    <div
+                      className="flex items-center justify-end gap-1.5"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       {isFolder ? (
                         <button
                           onClick={() => onOpenFolder && onOpenFolder(file)}
@@ -117,6 +168,17 @@ export const FileList: React.FC<FileListProps> = ({ files, onOpenFile, onOpenFol
                       ) : (
                         <>
                           <button
+                            onClick={(e) => handleCopyLink(e, file)}
+                            title="Copiar enlace"
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-800 dark:hover:text-blue-400"
+                          >
+                            {copiedId === file.id ? (
+                              <Check className="h-4 w-4 text-emerald-600" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </button>
+                          <button
                             onClick={() => onOpenFile(file)}
                             title="Vista previa"
                             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-800 dark:hover:text-blue-400"
@@ -124,13 +186,16 @@ export const FileList: React.FC<FileListProps> = ({ files, onOpenFile, onOpenFol
                             <Eye className="h-4 w-4" />
                           </button>
                           <a
-                            href={file.webViewLink || `https://drive.google.com/file/d/${file.id}/view`}
+                            href={
+                              file.webContentLink ||
+                              `https://drive.google.com/uc?export=download&id=${file.id}`
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
-                            title="Abrir en Google Drive"
+                            title="Descargar archivo"
                             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-blue-600 dark:hover:bg-slate-800 dark:hover:text-blue-400"
                           >
-                            <ExternalLink className="h-4 w-4" />
+                            <Download className="h-4 w-4" />
                           </a>
                         </>
                       )}

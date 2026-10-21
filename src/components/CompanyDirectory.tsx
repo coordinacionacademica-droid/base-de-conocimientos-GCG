@@ -142,9 +142,17 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
                 <div
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr ${
                     company.logoColor || 'from-blue-600 to-indigo-600'
-                  } text-white shadow-md shadow-blue-500/20 transition group-hover:scale-105`}
+                  } text-white shadow-md shadow-blue-500/20 transition group-hover:scale-105 overflow-hidden`}
                 >
-                  <Building2 className="h-6 w-6" />
+                  {company.logoUrl ? (
+                    <img
+                      src={company.logoUrl}
+                      alt={company.name}
+                      className="h-full w-full object-contain p-1.5 bg-white"
+                    />
+                  ) : (
+                    <Building2 className="h-6 w-6" />
+                  )}
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-bold tracking-wider text-slate-600 dark:bg-slate-800 dark:text-slate-300">

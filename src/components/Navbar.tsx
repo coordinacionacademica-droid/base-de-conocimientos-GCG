@@ -58,8 +58,20 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Left: Branding & Company Selector */}
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr ${currentCompany.logoColor || 'from-blue-600 to-indigo-600'} text-white shadow-sm shadow-blue-500/20`}>
-              <Building2 className="h-5 w-5" />
+            <div
+              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr ${
+                currentCompany.logoColor || 'from-blue-600 to-indigo-600'
+              } text-white shadow-sm shadow-blue-500/20 overflow-hidden`}
+            >
+              {currentCompany.logoUrl ? (
+                <img
+                  src={currentCompany.logoUrl}
+                  alt={currentCompany.name}
+                  className="h-full w-full object-contain p-1 bg-white"
+                />
+              ) : (
+                <Building2 className="h-5 w-5" />
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">

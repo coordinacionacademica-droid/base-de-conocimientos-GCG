@@ -20,7 +20,10 @@ import {
   ArrowLeft,
   ChevronRight,
   Folder,
-  HardDrive
+  HardDrive,
+  Star,
+  Building2,
+  Sparkles
 } from 'lucide-react';
 
 interface FolderBreadcrumb {
@@ -30,6 +33,7 @@ interface FolderBreadcrumb {
 
 export default function DashboardPage() {
   const router = useRouter();
+  const [companiesList, setCompaniesList] = useState<Company[]>(COMPANIES);
   const [currentCompany, setCurrentCompany] = useState<Company>(COMPANIES[0]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<'directory' | 'company'>('company');
@@ -81,7 +85,29 @@ export default function DashboardPage() {
       const res = await fetch(`/api/drive?folderId=${folderId}&t=${Date.now()}`);
       const data = await res.json();
       if (data.success) {
-        setFiles(data.files || []);
+        let loadedFiles: DriveFileItem[] = data.files || [];
+
+        // Check pinned files from localStorage
+        try {
+          const key = `gcg_pinned_${currentCompany.id}`;
+          const pinnedIds: string[] = JSON.parse(localStorage.getItem(key) || '[]');
+          loadedFiles = loadedFiles.map((f) => ({
+            ...f,
+            isPinned: pinnedIds.includes(f.id)
+          }));
+        } catch (_) {}
+
+        setFiles(loadedFiles);
+
+        // Auto-detect and store logo if logo.png/jpg found in root folder
+        if (data.detectedLogo) {
+          setCurrentCompany((prev) => ({ ...prev, logoUrl: data.detectedLogo }));
+          setCompaniesList((prev) =>
+            prev.map((c) =>
+              c.id === currentCompany.id ? { ...c, logoUrl: data.detectedLogo } : c
+            )
+          );
+        }
       }
     } catch (err) {
       console.error('Error cargando archivos:', err);
@@ -96,6 +122,28 @@ export default function DashboardPage() {
     }
   }, [activeFolderId, activeTab]);
 
+  // Toggle Pinned File ⭐
+  const handleTogglePin = (file: DriveFileItem) => {
+    const key = `gcg_pinned_${currentCompany.id}`;
+    let pinnedIds: string[] = [];
+    try {
+      pinnedIds = JSON.parse(localStorage.getItem(key) || '[]');
+    } catch (_) {}
+
+    const isCurrentlyPinned = pinnedIds.includes(file.id);
+    const updatedPinnedIds = isCurrentlyPinned
+      ? pinnedIds.filter((id) => id !== file.id)
+      : [...pinnedIds, file.id];
+
+    localStorage.setItem(key, JSON.stringify(updatedPinnedIds));
+
+    setFiles((prev) =>
+      prev.map((f) =>
+        f.id === file.id ? { ...f, isPinned: !isCurrentlyPinned } : f
+      )
+    );
+  };
+
   // 3. Category Counts
   const fileCounts = useMemo(() => {
     return {
@@ -108,7 +156,12 @@ export default function DashboardPage() {
     };
   }, [files]);
 
-  // 4. Filter and Search
+  // 4. Pinned Files
+  const pinnedFiles = useMemo(() => {
+    return files.filter((f) => f.isPinned);
+  }, [files]);
+
+  // 5. Filter and Search
   const filteredFiles = useMemo(() => {
     return files.filter((file) => {
       const matchesSearch = file.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -163,13 +216,13 @@ export default function DashboardPage() {
         {/* VIEW 1: ADMIN DIRECTORY (BUBBLES ORDERED ALPHABETICALLY) */}
         {isAdmin && activeTab === 'directory' ? (
           <CompanyDirectory
-            companies={COMPANIES}
+            companies={companiesList}
             onSelectCompany={handleSelectCompanyFromDirectory}
           />
         ) : (
           /* VIEW 2: SINGLE COMPANY REPOSITORY */
           <div className="space-y-6">
-            {/* Top Navigation Row: Back Button + Breadcrumbs + Drive Link */}
+            {/* Top Navigation Row: Back Button + Breadcrumbs + Actions */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-1.5 text-xs">
                 {isAdmin && (
@@ -228,29 +281,46 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Banner with Company Information & Quick Upload */}
-            <div className="rounded-3xl bg-gradient-to-r from-blue-700 via-indigo-800 to-slate-900 p-6 text-white shadow-lg shadow-blue-900/10">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-xs">
-                      <Cloud className="h-3.5 w-3.5" /> Google Drive en vivo
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 backdrop-blur-xs">
-                      <CheckCircle2 className="h-3.5 w-3.5" /> Sincronización instantánea
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-400/20 px-2.5 py-0.5 text-xs font-medium text-blue-200 backdrop-blur-xs">
-                      <HardDrive className="h-3.5 w-3.5" /> 0 MB Servidor Vercel
-                    </span>
+            {/* Banner with Company Information, Logo & Quick Upload */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-indigo-800 to-slate-900 p-6 text-white shadow-xl shadow-blue-900/10">
+              <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-4">
+                  {/* Dynamic Logo Box */}
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/10 p-2 backdrop-blur-md border border-white/20 shadow-md">
+                    {currentCompany.logoUrl ? (
+                      <img
+                        src={currentCompany.logoUrl}
+                        alt={currentCompany.name}
+                        className="max-h-full max-w-full object-contain rounded-lg"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center rounded-xl bg-white/20 text-white font-black text-xl">
+                        {currentCompany.code.slice(0, 2)}
+                      </div>
+                    )}
                   </div>
-                  <h2 className="text-xl font-black sm:text-2xl">{currentFolderDisplayName}</h2>
-                  <p className="text-xs text-blue-100 max-w-2xl leading-relaxed">
-                    {currentCompany.description ||
-                      'Repositorio institucional de archivos, normativas, capacitaciones y videos.'}
-                  </p>
+
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-xs font-medium text-white backdrop-blur-xs">
+                        <Cloud className="h-3.5 w-3.5" /> Google Drive en vivo
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 backdrop-blur-xs">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Sincronización instantánea
+                      </span>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-blue-400/20 px-2.5 py-0.5 text-xs font-medium text-blue-200 backdrop-blur-xs">
+                        <HardDrive className="h-3.5 w-3.5" /> 0 MB Servidor Vercel
+                      </span>
+                    </div>
+                    <h2 className="text-xl font-black sm:text-2xl">{currentFolderDisplayName}</h2>
+                    <p className="text-xs text-blue-100 max-w-2xl leading-relaxed">
+                      {currentCompany.description ||
+                        'Repositorio institucional de archivos, normativas, capacitaciones y videos.'}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2.5">
+                <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
                   <button
                     onClick={() => setIsUploadOpen(true)}
                     className="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-2.5 text-xs font-bold text-slate-900 shadow-sm transition hover:bg-slate-100 hover:shadow-md"
@@ -261,6 +331,44 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
+
+            {/* Pinned Files Showcase (⭐ Archivos Destacados) */}
+            {pinnedFiles.length > 0 && (
+              <div className="rounded-3xl border border-amber-200/80 bg-amber-50/30 p-4 dark:border-amber-900/30 dark:bg-amber-950/10">
+                <div className="mb-3 flex items-center gap-2 text-xs font-bold text-amber-800 dark:text-amber-300">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
+                  <span>Archivos Destacados e Indispensables ({pinnedFiles.length})</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                  {pinnedFiles.map((file) => (
+                    <div
+                      key={file.id}
+                      onClick={() => setSelectedFile(file)}
+                      className="group flex cursor-pointer flex-col justify-between rounded-2xl border border-amber-200/90 bg-white p-2.5 shadow-xs transition hover:border-amber-400 hover:shadow-sm dark:border-amber-800/60 dark:bg-slate-900"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Star className="h-3 w-3 fill-amber-400 text-amber-500" />
+                        <span className="text-[9px] font-bold uppercase text-slate-400">
+                          {file.fileCategory}
+                        </span>
+                      </div>
+                      <p className="my-1.5 line-clamp-2 text-[11px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-blue-600">
+                        {file.name}
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTogglePin(file);
+                        }}
+                        className="text-left text-[10px] text-amber-600 hover:underline dark:text-amber-400"
+                      >
+                        Quitar destacado
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Search, Filter Tabs and View Switcher */}
             <div>
@@ -312,7 +420,7 @@ export default function DashboardPage() {
                     Esta carpeta está vacía en Google Drive
                   </h3>
                   <p className="mt-1.5 max-w-md text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    Aún no se han subido archivos a esta carpeta. Sube documentos, manuales o subcarpetas en Drive y aparecerán aquí automáticamente en tiempo real.
+                    Aún no se han subido archivos a esta carpeta. Sube documentos, manuales, logos o subcarpetas en Drive y aparecerán aquí automáticamente en tiempo real.
                   </p>
                   <button
                     onClick={() => setIsUploadOpen(true)}
@@ -327,12 +435,14 @@ export default function DashboardPage() {
                   files={filteredFiles}
                   onOpenFile={(file) => setSelectedFile(file)}
                   onOpenFolder={handleOpenFolder}
+                  onTogglePin={handleTogglePin}
                 />
               ) : (
                 <FileList
                   files={filteredFiles}
                   onOpenFile={(file) => setSelectedFile(file)}
                   onOpenFolder={handleOpenFolder}
+                  onTogglePin={handleTogglePin}
                 />
               )}
             </div>

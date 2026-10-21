@@ -7,6 +7,7 @@ export interface Company {
   sector?: string;
   description?: string;
   logoColor?: string;
+  logoUrl?: string;
 }
 
 export interface DriveFileItem {
@@ -21,6 +22,7 @@ export interface DriveFileItem {
   createdTime?: string;
   modifiedTime?: string;
   fileCategory: 'folder' | 'video' | 'document' | 'spreadsheet' | 'presentation' | 'pdf' | 'image' | 'archive' | 'other';
+  isPinned?: boolean;
 }
 
 export interface UserSession {

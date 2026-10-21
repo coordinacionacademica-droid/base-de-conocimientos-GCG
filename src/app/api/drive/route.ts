@@ -4,7 +4,9 @@ import { DriveFileItem } from '@/types';
 import { MAIN_DRIVE_PARENT_FOLDER } from '@/config/companies';
 
 // Helper function to scrape live files and subfolders from public embeddedfolderview
-async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> {
+async function fetchLiveDriveFolder(
+  folderId: string
+): Promise<{ files: DriveFileItem[]; detectedLogo: string | null }> {
   try {
     const url = `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
     const res = await fetch(url, {
@@ -14,13 +16,15 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
       cache: 'no-store'
     });
 
-    if (!res.ok) return [];
+    if (!res.ok) return { files: [], detectedLogo: null };
 
     const html = await res.text();
     const files: DriveFileItem[] = [];
 
     // Split HTML by flip-entry div to guarantee 100% complete parsing per card
     const parts = html.split('<div class="flip-entry"');
+
+    let detectedLogo: string | null = null;
 
     for (let i = 1; i < parts.length; i++) {
       const entryContent = parts[i];
@@ -36,6 +40,11 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
 
       // Check if it's a folder
       const isFolder = entryContent.includes('drive-sprite-folder') || entryContent.includes('/drive/folders/');
+
+      // Check if this file is a company logo
+      if (!isFolder && /^logo\.(png|jpe?g|webp|svg)$/i.test(name)) {
+        detectedLogo = `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
+      }
 
       // Extract Thumbnail if available
       const thumbMatch = /<div class="flip-entry-thumb"><img src="([^"]+)"/.exec(entryContent);
@@ -61,10 +70,10 @@ async function fetchLiveDriveFolder(folderId: string): Promise<DriveFileItem[]> 
       });
     }
 
-    return files;
+    return { files, detectedLogo };
   } catch (error) {
     console.error('Error analizando carpeta en vivo de Drive:', error);
-    return [];
+    return { files: [], detectedLogo: null };
   }
 }
 
@@ -73,12 +82,13 @@ export async function GET(request: NextRequest) {
   const targetFolderId = searchParams.get('folderId') || MAIN_DRIVE_PARENT_FOLDER;
 
   // Fetch real-time files and subfolders from Google Drive
-  const liveFiles = await fetchLiveDriveFolder(targetFolderId);
+  const { files: liveFiles, detectedLogo } = await fetchLiveDriveFolder(targetFolderId);
 
   return NextResponse.json({
     success: true,
     source: 'google-drive-live',
     folderId: targetFolderId,
-    files: liveFiles
+    files: liveFiles,
+    detectedLogo
   });
 }
