@@ -77,10 +77,11 @@ export default function DashboardPage() {
     }
   }, [router]);
 
-  // 2. Fetch Files for active folder
-  const loadFiles = async (folderId: string) => {
+  // 2. Fetch Files for active folder (supports silent background auto-sync)
+  const loadFiles = async (folderId: string, isSilent = false) => {
     if (!folderId) return;
-    setIsLoading(true);
+    if (!isSilent) setIsLoading(true);
+
     try {
       const res = await fetch(`/api/drive?folderId=${folderId}&t=${Date.now()}`);
       const data = await res.json();
@@ -112,7 +113,7 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Error cargando archivos:', err);
     } finally {
-      setIsLoading(false);
+      if (!isSilent) setIsLoading(false);
     }
   };
 
@@ -121,6 +122,35 @@ export default function DashboardPage() {
       loadFiles(activeFolderId);
     }
   }, [activeFolderId, activeTab]);
+
+  // 3. Real-Time Auto-Sync:
+  // a) As soon as the user returns from Google Drive (tab focus / visibility)
+  // b) Silent background heartbeat polling every 15 seconds
+  useEffect(() => {
+    if (activeTab !== 'company' || !activeFolderId) return;
+
+    const handleSync = () => {
+      if (document.visibilityState === 'visible') {
+        loadFiles(activeFolderId, true);
+      }
+    };
+
+    window.addEventListener('focus', handleSync);
+    document.addEventListener('visibilitychange', handleSync);
+
+    // Silent background poll every 15 seconds
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadFiles(activeFolderId, true);
+      }
+    }, 15000);
+
+    return () => {
+      window.removeEventListener('focus', handleSync);
+      document.removeEventListener('visibilitychange', handleSync);
+      clearInterval(interval);
+    };
+  }, [activeFolderId, activeTab, currentCompany.id]);
 
   // Toggle Pinned File ⭐
   const handleTogglePin = (file: DriveFileItem) => {

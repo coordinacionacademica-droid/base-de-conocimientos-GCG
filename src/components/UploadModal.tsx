@@ -35,6 +35,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const [copied, setCopied] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
+  // Auto-sync automatically when user returns to this window from Google Drive!
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleReturn = () => {
+      setIsSyncing(true);
+      onSync();
+      setTimeout(() => {
+        setIsSyncing(false);
+      }, 1000);
+    };
+    window.addEventListener('focus', handleReturn);
+    return () => window.removeEventListener('focus', handleReturn);
+  }, [isOpen, onSync]);
+
   if (!isOpen) return null;
 
   const folderUrl = `https://drive.google.com/drive/folders/${folderId}`;
