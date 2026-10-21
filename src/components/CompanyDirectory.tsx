@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Company } from '@/types';
-import { SECTORS } from '@/config/companies';
+import { SECTORS, GCG_OFFICIAL_LOGO } from '@/config/companies';
 import {
   Building2,
   Search,
@@ -56,22 +56,33 @@ export const CompanyDirectory: React.FC<CompanyDirectoryProps> = ({
     <div className="space-y-6">
       {/* Header & Stats Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-indigo-800 to-slate-900 p-6 sm:p-8 text-white shadow-xl shadow-blue-900/10">
-        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur-md">
-                <Sparkles className="h-3.5 w-3.5 text-amber-300" /> Directorio Corporativo Central
-              </span>
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 backdrop-blur-md">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> {companies.length} Empresas Vinculadas
-              </span>
+        <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-4">
+            {/* Official GCG Logo Box */}
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-lg">
+              <img
+                src={GCG_OFFICIAL_LOGO}
+                alt="Grupo Corporativo GCG"
+                className="h-full w-full object-contain"
+              />
             </div>
-            <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
-              Portal Corporativo GCG
-            </h2>
-            <p className="max-w-2xl text-xs sm:text-sm text-blue-100 leading-relaxed">
-              Explorador en tiempo real de archivos institucionales. Selecciona cualquier empresa aliada para inspeccionar sus carpetas, manuales y videos almacenados en Google Drive con 0 MB de consumo en servidor.
-            </p>
+
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-0.5 text-xs font-semibold backdrop-blur-md">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-300" /> Directorio Corporativo Central
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-2.5 py-0.5 text-xs font-medium text-emerald-200 backdrop-blur-md">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" /> {companies.length} Empresas Vinculadas
+                </span>
+              </div>
+              <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+                Portal Corporativo GCG
+              </h2>
+              <p className="max-w-xl text-xs sm:text-sm text-blue-100 leading-relaxed">
+                Explorador en tiempo real de archivos institucionales. Selecciona cualquier empresa aliada para inspeccionar sus carpetas, manuales y videos almacenados en Google Drive con 0 MB de consumo en servidor.
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">

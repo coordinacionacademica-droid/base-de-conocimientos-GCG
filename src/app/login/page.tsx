@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Building2, KeyRound, ShieldAlert, ArrowRight, Sparkles } from 'lucide-react';
-import { COMPANIES, ADMIN_CREDENTIALS } from '@/config/companies';
+import { COMPANIES, ADMIN_CREDENTIALS, GCG_OFFICIAL_LOGO } from '@/config/companies';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -56,8 +56,12 @@ export default function LoginPage() {
       <div className="w-full max-w-md space-y-6">
         {/* Header Branding */}
         <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shadow-xl shadow-blue-500/25">
-            <Building2 className="h-7 w-7" />
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-white p-2 shadow-xl shadow-blue-500/10 border border-slate-200 dark:border-slate-800 dark:bg-slate-900">
+            <img
+              src={GCG_OFFICIAL_LOGO}
+              alt="Grupo Corporativo GCG"
+              className="h-full w-full object-contain"
+            />
           </div>
           <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-3xl">
             Portal de Empresas GCG

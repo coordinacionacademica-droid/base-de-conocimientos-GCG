@@ -8,6 +8,8 @@ export const ADMIN_CREDENTIALS = {
 
 export const MAIN_DRIVE_PARENT_FOLDER = '1K2kfm7yuPp3Etcrg1TIhsrea-ZCJfMr1';
 
+export const GCG_OFFICIAL_LOGO = 'https://i.pandape.com/PROD/atslogos/cf6b645a-4f13-4b46-804c-81a655f843ee_4.png';
+
 export const SECTORS = [
   'Todos',
   'Educación & Minería',

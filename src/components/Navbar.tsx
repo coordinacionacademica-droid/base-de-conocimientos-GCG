@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Company } from '@/types';
 import { Building2, LogOut, ExternalLink, ShieldCheck, FolderUp, ChevronDown, Grid, Sun, Moon } from 'lucide-react';
-import { COMPANIES } from '@/config/companies';
+import { COMPANIES, GCG_OFFICIAL_LOGO } from '@/config/companies';
 
 interface NavbarProps {
   currentCompany: Company;
@@ -59,18 +59,28 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr ${
-                currentCompany.logoColor || 'from-blue-600 to-indigo-600'
-              } text-white shadow-sm shadow-blue-500/20 overflow-hidden`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white shadow-xs border border-slate-200/90 dark:border-slate-800 dark:bg-slate-900 overflow-hidden p-1 transition"
             >
-              {currentCompany.logoUrl ? (
+              {isInDirectoryView ? (
+                <img
+                  src={GCG_OFFICIAL_LOGO}
+                  alt="Grupo Corporativo GCG"
+                  className="h-full w-full object-contain"
+                />
+              ) : currentCompany.logoUrl ? (
                 <img
                   src={currentCompany.logoUrl}
                   alt={currentCompany.name}
-                  className="h-full w-full object-contain p-1 bg-white"
+                  className="h-full w-full object-contain"
                 />
               ) : (
-                <Building2 className="h-5 w-5" />
+                <div
+                  className={`flex h-full w-full items-center justify-center rounded-xl bg-gradient-to-tr ${
+                    currentCompany.logoColor || 'from-blue-600 to-indigo-600'
+                  } text-white font-bold text-xs`}
+                >
+                  {currentCompany.code.slice(0, 2)}
+                </div>
               )}
             </div>
             <div>
