@@ -1,9 +1,21 @@
+export interface AttachedDriveFile {
+  id: string;
+  name: string;
+  fileCategory?: string;
+  webViewLink?: string;
+  webContentLink?: string;
+}
+
 export interface KnowledgeArticle {
   id: string;
   title: string;
-  category: 'Recursos Humanos' | 'Seguridad & SST' | 'Finanzas & Viáticos' | 'Legal & Gobierno';
+  category: string;
   summary: string;
   badge?: string;
+  isCustom?: boolean;
+  companyId?: string;
+  createdAt?: string;
+  attachedDriveFiles?: AttachedDriveFile[];
   externalLink?: {
     label: string;
     url: string;

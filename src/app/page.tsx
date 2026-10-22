@@ -570,7 +570,11 @@ export default function DashboardPage() {
               </div>
             ) : (
               /* SECTION 2: BASE DE CONOCIMIENTOS & GUÍAS */
-              <KnowledgeBaseView companyName={currentCompany.name} />
+              <KnowledgeBaseView
+                company={currentCompany}
+                driveFiles={files}
+                onOpenFile={(file) => setSelectedFile(file)}
+              />
             )}
           </div>
         )}
