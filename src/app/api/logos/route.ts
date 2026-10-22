@@ -34,7 +34,7 @@ async function checkSingleCompanyLogo(folderId: string): Promise<string | null> 
 
       if (titleMatch && idMatch) {
         const fileName = titleMatch[1].trim();
-        if (/^logo\.(png|jpe?g|webp|svg)$/i.test(fileName)) {
+        if (/^logo[-_a-z0-9\s]*\.(png|jpe?g|webp|svg)$/i.test(fileName)) {
           return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w400`;
         }
       }

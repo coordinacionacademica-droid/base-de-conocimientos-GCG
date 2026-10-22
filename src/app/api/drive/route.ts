@@ -50,8 +50,8 @@ async function fetchLiveDriveFolder(
       // Check if it's a folder
       const isFolder = entryContent.includes('drive-sprite-folder') || entryContent.includes('/drive/folders/');
 
-      // Check if this file is a company logo
-      if (!isFolder && /^logo\.(png|jpe?g|webp|svg)$/i.test(name)) {
+      // Check if this file is a company logo (flexible name: logo.png, logo.jpg, logo_xxx.png, etc.)
+      if (!isFolder && /^logo[-_a-z0-9\s]*\.(png|jpe?g|webp|svg)$/i.test(name)) {
         detectedLogo = `https://drive.google.com/thumbnail?id=${fileId}&sz=w400`;
       }
 
